@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+<label> Equation: </label>
+<input type = "text" id = "input">
+<select id = "task">
+	<option value = "molarMass"> Molas Mass</option>
+	<option value = "balance"> Balance (stoichiometry, limiting reactant) </option>
+	<option value = "massPercent"> Mass Percent </option>
+	<option value = "enthalpy"> Enthalpy </option>
+</select>
+<button onclick = "begin()"> Ok </button>
+<p id = "displayEquation"> </p>
+<p id = "secondLine"> </p>
+
+</body>
+
+<script>
+
+let allElements = {"H": 1.008, "He": 4.003, "Li": 6.941, "Be": 9.012, "B": 10.81, "C": 12.01, "N": 14.01, "O": 16.00, "F": 19.00, "Ne": 20.18, "Na": 22.99, "Mg": 24.31, "Al": 26.98, "Si": 28.09, "P": 30.97, "S": 32.07, "Cl": 35.45, "Ar": 39.95, "K": 39.10, "Ca": 40.08, "Sc": 44.96, "Ti": 47.88, "V": 50.94, "Cr": 52.00, "Mn": 54.94, "Fe": 55.85, "Co": 58.93, "Ni": 58.69, "Cu": 63.55, "Zn": 65.39, "Ga": 69.72, "Ge": 72.59, "As": 74.92, "Se": 78.96, "Br": 79.90, "Kr": 83.80, "Rb": 85.47, "Sr": 87.62, "Y": 88.91, "Zr": 91.22, "Nb": 92.91, "Mo": 95.94, "Tc": 99.00, "Ru": 101.10, "Rh": 102.90, "Pd": 106.40, "Ag": 107.90, "Cd": 112.40, "In": 114.80, "Sn": 118.70, "Sb": 121.80, "Te": 127.60, "I": 126.90, "Xe": 131.30, "Cs": 132.90, "Ba": 137.30, "Lu": 175.00, "Hf": 178.50, "Ta": 181.00, "W": 183.80, "Re": 186.2, "Os": 190.20, "Ir": 192.20, "Pt": 195.10, "Au": 197.00, "Hg": 200.60, "Tl": 204.40, "Pb": 207.00, "Bi": 208.00, "Po": 209.00, "At": 210.00, "Rn": 222.00, "Fr": 223.00, "Ra": 226.00, "Lr": 262.00, "Rf": 261.00, "Db": 268.00, "Sg": 271.00, "Bh": 272.00, "Hs": 276.00, "Mt": 276.00, "Ds": 281.00, "Rg": 280.00, "Cn": 285.00, "Uut": 284.00, "Fl": 289.00, "Uup": 288.00, "Lv": 293.00, "Uus": 294.00, "Uuo": 294.00}
+
+let groups = {1: ["H", "Li", "Na", "K", "Rb", "Cs", "Fr"], 2: ["Be", "Mg", "Ca", "Sr", "Ba", "Ra"], 3: ["Sc", "Y", "La", "Ac"], 4: ["Ti", "Zr", "Hf", "Rf", "Ce", "Th"], 5: ["V", "Nb", "Ta", "Db", "Pr", "Pa"], 6: ["Cr", "Mo", "W", "Sg", "Nd", "U"], 7: ["Mn", "Tc", "Re", "Bh", "Pm", "Np"], 8: ["Fe", "Ru", "Os", "Hs", "Sm", "Pu"], 9: ["Co", "Rh", "Ir", "Mt", "Eu", "Am"], 10: ["Ni", "Pd", "Pt", "Ds", "Gd", "Cm"], 11: ["Cu", "Ag", "Au", "Rg", "Tb", "Bk"], 12: ["Zn", "Cd", "Hg", "Cn", "Dy", "Cf"], 13: ["B", "Al", "Ga", "In", "Tl", "Nh", "Ho", "Es"], 14: ["C", "Si", "Ge", "Sn", "Pb", "Fl", "Er", "Fm"], 15: ["N", "P", "As", "Sb", "Bi", "Mc", "Tm", "Md"], 16: ["O", "S", "Se", "Te", "Po", "Lv", "Yb", "No"], 17: ["F", "Cl", "Br", "I", "At", "Ts", "Lu", "Lr"], 18: ["He", "Ne", "Ar", "Kr", "Xe", "Rn", "Og"] }
+
+
+let userInput;
+let elements;
+let terms = [];
+let withSub;
+
+let enthalpyEquations = [];
+let numberOfReactants = 0;
+let numberOfProducts = 0;
+
+function Term(elements, side, startIndex) {
+	this.elements = elements;
+	this.side = side;
+	this.coefficient = 1;
+	this.startIndex = startIndex;
+	this.molarMass;
+}
+
+function Element(symbol, molarMass, index, multiplier, side) {
+	this.symbol = symbol
+	this.molarMass = molarMass;
+	this.index = index;
+	this.multiplier = multiplier;
+	this.side = side
+}
+
+$("#task").change(function() {
+	reset();
+});
+
+$("#input").keyup(function() {
+	reset();
+	updateDisplayEquation();
+});
+
+function updateDisplayEquation() {
+
+	$("#secondLine").text("");
+
+	userInput = $("#input").val();
+
+	withSub = [];
+
+	for (let i = 0; i < userInput.length; i += 1) {
+		if (isNaN(userInput[i])) {
+			if (userInput[i] == "+" || userInput[i] == "=") {
+				if (userInput[i - 1] != " ") {
+					withSub.push(" ");
+				}
+			}
+			withSub.push(userInput[i]);
+			if (userInput[i] == "+" || userInput[i] == "=") {
+				if (userInput[i + 1] != " ") {
+					withSub.push(" ");
+				}
+			}
+		} else if (userInput[i] != " ") {
+			withSub.push("<sub>" + userInput[i] + "</sub>");
+		} else {
+			withSub.push(" ");
+		}
+	}
+	$("#displayEquation").text("");
+
+	for (let i = 0; i < withSub.length; i += 1) {
+		$("#displayEquation").append(withSub[i])
+	}
+}
+
+// Sets the elements and terms
+function begin() {
+
+	reset();
+
+	let spaceIndices = [];
+
+	for (let i = 0; i < userInput.length; i += 1) {
+		if (userInput[i] == " ") {
+			spaceIndices.push(i);
+		}
+	}
+
+	elements = [];
+	terms = [];
+
+	let side = "left";
+
+	let insideIndex = -1;
+	let termIndex = 0;
+
+	let increment = 1;
+	for (let i = 0; i < userInput.length; i += increment) {
+
+		increment = 1;
+
+		// If the character and the next character form an element, set char to those 2
+		// If they do not, check to see if the character is a number
+		// If it is, look forward until the character is no longer a number, and set char = to that
+		//If it is not a number, set char equal to the character
+
+		let char = "";
+		if (allElements[userInput[i] + userInput[i + 1]] != undefined) {
+			char = userInput[i] + userInput[i + 1];
+			increment = 2;
+		} else {
+			if (!isNaN(userInput[i]) && userInput[i] != " ") {
+				char = getWholeNumber(i).toString();
+				increment = char.length;
+			} else {
+				char = userInput[i];
+			}
+		}
+
+		if (char == "(") {
+			insideIndex = i + 1;
+		} else if (char == ")") {
+
+			let mult = getWholeNumber(i + 1);
+			for (let j = 0; j < elements.length; j += 1) {
+				if (elements[j].index >= insideIndex) {
+					elements[j].multiplier *= mult;
+				}
+			}
+
+			insideIndex = -1
+		}
+
+		if (allElements[char] != undefined) {
+			let mult = 1;
+			if (userInput[i + 1] != undefined && !isNaN(userInput[i + char.length]) && userInput[i + char.length] != " ") {
+				mult = getWholeNumber(i + char.length);
+			}
+			elements.push(new Element(char, allElements[char], i, mult, side));
+		}
+
+		if (char == "+" || char == "=") {
+			createTerm(termIndex, side);
+			termIndex = i;
+			if (char == "=") {
+				side = "right";
+			}
+		}
+	}
+
+	createTerm(termIndex, side);
+
+
+	switch ($("#task").val()) {
+
+		case "balance":
+			balance();
+			break;
+		case "molarMass":
+			let total = 0;
+			for (let i = 0; i < terms.length; i += 1) {
+				total += calculateMolarMass(terms[i]);
+			}
+			total = total.toFixed(4);
+			$("#secondLine").text(total);
+			break;
+		case "massPercent":
+			massPercent();
+			break;
+		case "enthalpy":
+			enthalpy();
+			break;
+	}
+}
+
+function enthalpy() {
+
+	$("body").append("<label class = 'termsList'> # of Reactants </label> <input type = 'text' id = 'numberOfReactants' class = 'termsList'> </input>")
+	$("body").append("<label class = 'termsList'> # of Products </label> <input type = 'text' id = 'numberOfProducts' class = 'termsList'> </input>")
+	$("body").append("<br class = 'termsList'> <button class = 'termsList' onclick = 'addEquation()'> Add Equation </button> <br class = 'termsList'> <br class = 'termsList'>");
+}
+
+function addEquation() {
+
+	let numberOfReactants = parseInt($("#numberOfReactants").val())
+	let numberOfProducts = parseInt($("#numberOfProducts").val())
+
+	let table = "<table id = 'equation" + enthalpyEquations.length + "' class = 'termsList'> </table>"
+
+	$("body").append(table);
+
+	$("#equation" + enthalpyEquations.length).append("<tr> <th> Molecule </th> <th> Mass (g) </th> <th> Moles </th>");
+
+	enthalpyEquations.push(table);
+
+}
+
+function massPercent() {
+
+	$(".elementsList").remove();
+
+	elementAmounts = {};
+
+	let totalMass = 0;
+	for (let i = 0; i < terms.length; i += 1) {
+		totalMass += terms[i].molarMass;
+		for (let j = 0; j < terms[i].elements.length; j += 1) {
+			let element = terms[i].elements[j];
+			if (elementAmounts[element.symbol] == undefined) {
+				elementAmounts[element.symbol] = element.multiplier;
+			} else {
+				elementAmounts[element.symbol] += element.multiplier;
+			}
+		}
+	}
+
+	for (let i in elementAmounts) {
+
+		let percent = allElements[i] * elementAmounts[i] / totalMass * 100;
+		percent = percent.toFixed(2);
+		$("body").append("<p class = 'elementsList'>" + i + ": " + percent + "%" + "</p>");
+	}
+
+}
+
+
+
+function calculateMolarMass(term) {
+	let total = 0;
+	for (let i = 0; i < term.elements.length; i += 1) {
+		let element = term.elements[i];
+		total += element.molarMass * element.multiplier;
+	}
+	return total;
+}
+
+
+function balance() {
+
+	updateDisplayEquation();
+
+	let leftSide = calculateAmounts("left");
+	let rightSide = calculateAmounts("right");
+
+
+	let counter = ""
+	for (let i = 0; i < terms.length; i += 1) {
+		counter += "1";
+	}
+
+	while (!isEqual(leftSide, rightSide) && counter.length == terms.length) {
+
+		counter = (parseInt(counter) + 1).toString();
+		if (parseInt(counter) % 10 == 0) {
+			counter = (parseInt(counter) + 1).toString();
+		}
+
+		for (let i = 0; i < terms.length; i += 1) {
+			terms[i].coefficient = parseInt(counter[i]);
+		}
+		leftSide = calculateAmounts("left");
+		rightSide = calculateAmounts("right");
+	}
+
+	if (counter.length != terms.length) {
+		alert ("The equation is not balanceable!")
+	} else {
+
+		let termCounter = 1;
+		if (terms[0].coefficient != 1) {
+			withSub[0] = terms[0].coefficient + withSub[0];
+		}
+		for (let i = 0; i < withSub.length; i += 1) {
+			if (withSub[i] == "+" || withSub[i] == "=") {
+				if (terms[termCounter].coefficient != 1) {
+					withSub[i + 1] += terms[termCounter].coefficient;
+				}
+				termCounter += 1;
+			}
+		}
+
+
+		$("#displayEquation").text("");
+		for (let i = 0; i < withSub.length; i += 1) {
+			$("#displayEquation").append(withSub[i])
+		}
+
+		let simpleText = "";
+		for (let i = 0; i < terms.length; i += 1) {
+			simpleText += terms[i].coefficient + " ";
+		}
+		$("#secondLine").text(simpleText);
+
+
+		displayNextTask();
+
+	}
+}
+
+function displayNextTask() {
+
+	$(".termsList").remove();
+
+
+	$("body").append("<table id = 'termsTable' class = 'termsList'> </table>");
+	$("#termsTable").append("<tr> <th> Molecule </th> <th> Mass (g) </th> <th> Moles </th>");
+
+	for (let i = 0; i < terms.length; i += 1) {
+		const term = terms[i];
+		let string = "";
+		for (let j = 0; j < term.elements.length; j += 1) {
+			string += term.elements[j].symbol;
+			if (term.elements[j].multiplier != 1) {
+				string += "<sub>" + term.elements[j].multiplier + "</sub>";
+			}
+		}
+
+		$("#termsTable").append("<tr> <td> <p id = 'term" + i + "Name' class = 'termsList'>" + string + "</p> </td> <td> <input type = 'text' class = 'termsList' id = 'term" + i + "Mass'> </td> <td> <input type = 'text' class = 'termsList' id = 'term" + i + "Moles'</td> </tr>");
+	}
+
+
+
+
+	$("body").append("<button onclick = 'beginStoichiometry()' class = 'termsList'> Ok </button>")
+}
+
+function beginStoichiometry() {
+
+	let masses = {};
+	let knownMassIndices = [];
+
+	for (let i = 0; i < terms.length; i += 1) {
+		if ($("#term" + i + "Mass").val() != "") {
+			masses[i] = parseFloat($("#term" + i + "Mass").val());
+			knownMassIndices.push(i);
+		} else if ($("#term" + i + "Moles").val() != "") {
+			masses[i] = parseFloat($("#term" + i + "Moles").val()) * terms[i].molarMass;
+			knownMassIndices.push(i);
+		} else {
+			masses[i] = -1;
+		}
+	}
+
+	if (knownMassIndices.length == 1) {
+		stoichiometryWithOneKnown(masses, knownMassIndices);
+	} else if (knownMassIndices.length > 1) {
+
+		let molesIndices = {};
+
+		for (let i = 0; i < knownMassIndices.length; i += 1) {
+			let index = knownMassIndices[i];
+			molesIndices[index] = masses[index] / terms[index].molarMass;
+		}
+
+		let lowestIndex = 0;
+		for (let i in molesIndices) {
+
+			if (molesIndices[i] / terms[i].coefficient * terms[lowestIndex].coefficient < molesIndices[lowestIndex]) {
+				lowestIndex = Object.keys(molesIndices)[i];
+			}
+		}
+
+
+		//console.log(lowestIndex);
+
+		let excessOriginalMasses = {}
+
+		for (let i = 0; i < terms.length; i += 1) {
+
+			if (i != lowestIndex) {
+				if ($("#term" + i + "Moles").val() != "") {
+					excessOriginalMasses[i] = parseFloat($("#term" + i + "Moles").val() * terms[i].molarMass);
+					$("#term" + i + "Moles").val("");
+				}
+
+				if ($("#term" + i + "Mass").val() != "") {
+					excessOriginalMasses[i] = parseFloat($("#term" + i + "Mass").val());
+				}
+			}
+		}
+
+		knownMassIndices = [lowestIndex];
+		masses = {};
+
+		if ($("#term" + lowestIndex + "Moles").val() == "") {
+			masses[lowestIndex] = parseFloat($("#term" + lowestIndex + "Mass").val());
+		} else if ($("#term" + lowestIndex + "Mass").val() == "") {
+			masses[lowestIndex] = parseFloat($("#term" + lowestIndex + "Moles").val() * terms[lowestIndex].molarMass);
+		}
+
+		for (let i = 0; i < terms.length; i += 1) {
+			if (i != lowestIndex) {
+				masses[i] = -1;
+			}
+		}
+
+		let limitingSymbol = $("#term" + lowestIndex + "Name").text();
+		$("#term" + lowestIndex + "Name").text(limitingSymbol + " (Limiting Reactant)");
+
+		stoichiometryWithOneKnown(masses, knownMassIndices);
+
+		console.log(excessOriginalMasses);
+
+		for (let i in excessOriginalMasses) {
+
+			let excessMass = excessOriginalMasses[i] - parseFloat($("#term" + i + "Mass").val());
+			excessMass = excessMass.toFixed(4);
+			let excessSymbol = $("#term" + i + "Name").text();
+			$("#term" + i + "Name").text(excessSymbol + " (" + excessMass + "g excess)");
+		}
+	}
+
+}
+
+
+
+
+function stoichiometryWithOneKnown(masses, knownMassIndices) {
+
+	let index = knownMassIndices[0];
+	let term1Moles = masses[index] / terms[index].molarMass;
+
+	if ($("#term" + index + "Moles").val() == "") {
+		$("#term" + index + "Moles").val(term1Moles)
+	} if ($("#term" + index + "Mass").val() == "") {
+			$("#term" + index + "Mass").val(term1Moles * terms[index].molarMass);
+	}
+
+	for (let i = 0; i < terms.length; i += 1) {
+		if (i != index) {
+
+			let term2Moles = term1Moles / terms[index].coefficient * terms[i].coefficient;
+			$("#term" + i + "Moles").val(term2Moles);
+
+			let term2Mass = term2Moles * terms[i].molarMass;
+			$("#term" + i + "Mass").val(term2Mass);
+		}
+	}
+}
+
+
+
+
+function createTerm(startIndex, side) {
+	terms.push(new Term([], side, startIndex, 0));
+	for (let i = 0; i < elements.length; i += 1) {
+		if (elements[i].index >= startIndex) {
+			terms[terms.length - 1].elements.push(elements[i]);
+		}
+	}
+	terms[terms.length - 1].molarMass = calculateMolarMass(terms[terms.length - 1]);
+}
+
+function getWholeNumber(startIndex) {
+
+	let number = "";
+	for (let i = startIndex; !isNaN(userInput[i]); i += 1) {
+		number += userInput[i]
+	}
+	return parseInt(number);
+
+}
+
+
+function calculateAmounts(side) {
+
+	amounts = {};
+	for (let i = 0; i < terms.length; i += 1) {
+		if (terms[i].side == side) {
+			for (let j = 0; j < terms[i].elements.length; j += 1) {
+				let element = terms[i].elements[j];
+				amounts[element.symbol] = amounts[element.symbol] == undefined ? element.multiplier * terms[i].coefficient : amounts[element.symbol] + element.multiplier * terms[i].coefficient;
+			}
+		}
+	}
+	return amounts;
+
+}
+
+function reset() {
+
+	updateDisplayEquation();
+	$("#secondLine").text("");
+	$(".nextTask").remove();
+	$(".termsList").remove();
+	$(".elementsList").remove();
+
+}
+
+function isEqual(objA, objB) {      
+	let aProps = Object.getOwnPropertyNames(objA);     
+	let bProps = Object.getOwnPropertyNames(objB);
+	if (aProps.length != bProps.length) {         
+    	return false;     
+	}      
+	for (let i = 0; i < aProps.length; i++) {         
+   		let propName = aProps[i];               
+    	 if (objA[propName] !== objB[propName]) {             
+        	return false;         
+     	}     
+	}
+	return true; 
+}  
+
+
+</script>
+
+<style>
+
+table {
+	border-collapse: collapse;
+}
+
+table, td, th {
+	border: 1px solid black;
+}
+
+input.termsList {
+	width: 70px;
+}
+
+</style>
+
+
+</html>
