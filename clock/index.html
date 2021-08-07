@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+
+<body>
+</body>
+
+<script>
+
+var cWidth = 500;
+var cHeight = 500;
+
+var clock;
+
+function setup() {
+	createCanvas(cWidth, cHeight);
+	textAlign(CENTER, CENTER);
+	textSize(30);
+	noStroke();
+
+	let hourHand = new Hand("red", 100, 12);
+	let minuteHand = new Hand("green", 120, 60);
+	let secondHand = new Hand("yellow", 135, 60);
+
+	let millisecondHand = new Hand("pink", 135, 1000);
+
+	let hands = {
+		hourHand: hourHand,
+		minuteHand: minuteHand,
+		secondHand: secondHand,
+		millisecondHand: millisecondHand
+	}
+
+	clock = new Clock(cWidth/2, cHeight/2, 150, hands);
+
+	let input = document.createElement("input");
+
+	$("body").append("<br><input type = 'checkbox' id = 'showMilliseconds'/> <label for = 'showMilliseconds'>Show Milliseconds</label>");
+	$("body").append("<br><input type = 'checkbox' id = 'smoothHands'/> <label for = 'smoothHands'>Smooth Hands</label>")
+}
+
+function draw() {
+	background("#000033");
+
+	clock.update();
+	clock.show();
+
+
+}
+
+class Clock {
+	constructor(centerX, centerY, radius, hands) {
+		this.centerX = centerX;
+		this.centerY = centerY;
+		this.radius = radius;
+		this.hands = hands;
+
+		for (let hand in this.hands) {
+			this.hands[hand].clock = this;
+		}
+	}
+
+	update() {
+		let today = new Date();
+		let hours = today.getHours();
+		let minutes = today.getMinutes();
+		let seconds = today.getSeconds();
+		let milliseconds = today.getMilliseconds();
+
+		if ($("#smoothHands").is(":checked")) {
+			seconds += (milliseconds/1000);
+			minutes += (seconds/60);
+			hours += (minutes/60);
+		}
+
+		this.hands.hourHand.value = hours;
+		this.hands.minuteHand.value = minutes;
+		this.hands.secondHand.value = seconds;
+		this.hands.millisecondHand.value = milliseconds;
+	}
+
+	show() {
+
+		stroke(0);
+		fill("#330033");
+		ellipse(this.centerX, this.centerY, this.radius*2 + 50, this.radius*2 + 50)
+
+		fill("#a0a050");
+		noStroke();
+		strokeWeight(1);
+		let i = 0;
+		for (let num of [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) {
+			let angle = i*TWO_PI/12 - HALF_PI;
+			text(num, this.centerX + this.radius*cos(angle), this.centerY + this.radius*sin(angle));
+			i += 1;
+		}
+
+		for (let hand in this.hands) {
+			if (hand != "millisecondHand" || $("#showMilliseconds").is(":checked")) {
+				this.hands[hand].show();
+			}
+		}
+	}
+}
+
+class Hand {
+	constructor(color, length, maxValue, clock) {
+		this.color = color;
+		this.length = length;
+		this.value;
+		this.maxValue = maxValue;
+		this.clock = clock;
+	}
+
+	show() {
+		let angle = this.value / this.maxValue * TWO_PI - HALF_PI;
+		stroke(this.color);
+		strokeWeight(5);
+		line(this.clock.centerX, this.clock.centerY, this.clock.centerX + this.length*cos(angle), this.clock.centerY + this.length*sin(angle));
+	}
+}
+
+
+</script>
+
+
+<style>
+
+</style>
+
+</html>
