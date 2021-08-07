@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script> <!--p5-->
+  <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>-->
+</head>
+
+<body>
+
+</body>
+
+<script>
+
+var cWidth;
+var cHeight;
+
+var rows = 120;
+var cols = 120;	
+
+var groundChance = 0.515;
+
+var grid = [];
+
+var thresh = 4;
+
+var iterations = 7;
+
+
+function setup() {
+
+	cWidth = 700;
+	cHeight = 700;
+
+	noStroke();
+
+	createCanvas(cWidth, cHeight);
+
+	for (let r = 0; r < rows; r += 1) {
+		grid.push([]);
+		for (let c = 0; c < cols; c += 1) {
+			let type = random() < groundChance ? "ground" : "water";
+			grid[r].push(new Square(r, c, type));
+		}
+	}
+
+	for (let r = 0; r < rows; r += 1) {
+		for (let c = 0; c < cols; c += 1) {
+			grid[r][c].setNeighbors();
+		}
+	}
+
+	for (let i = 0; i < iterations; i += 1) {
+		smoothGround();
+	}
+}
+
+function draw() {
+	for (let r = 0; r < rows; r += 1) {
+		for (let c = 0; c < cols; c += 1) {
+			grid[r][c].show();
+		}
+	}
+}
+
+function smoothGround() {
+	for (let r = 0; r < rows; r += 1) {
+		for (let c = 0; c < cols; c += 1) {
+			let n = 0;
+			for (let neighbor of grid[r][c].neighbors) {
+				if (neighbor.type == "water") {
+					n += 1;
+				}
+			}
+			if (n > thresh) {
+				grid[r][c].type = "water";
+			} else if (n < thresh) {
+				grid[r][c].type = "ground";
+			}
+		}
+	}
+}
+
+function Square(row, col, type) {
+	this.row = row;
+	this.col = col;
+	this.type = type;
+
+	this.width = cWidth/cols;
+	this.height = cHeight/rows;
+
+	this.x = this.col * this.width;
+	this.y = this.row * this.height;
+
+	this.neighbors = [];
+
+	this.show = function() {
+		if (this.type == "ground") {
+			fill(0, 255, 0);
+		} else if (this.type == "water") {
+			fill(0, 0, 255);
+		}
+		rect(this.x, this.y, this.width, this.height);
+	}
+
+    this.setNeighbors = function() {
+
+        let dr = [0, -1, -1, -1, 0, 1, 1, 1];
+        let dc = [-1, -1, 0, 1, 1, 1, 0, -1];
+
+        for (let i = 0; i < dr.length; i += 1) {
+            let s = getSquareAt(this.row + dr[i], this.col + dc[i]);
+            if (s) {
+            	this.neighbors.push(s);
+            }
+        }
+    }
+
+}
+
+function getSquareAt(_r, _c) {
+	for (let r = 0; r < rows; r += 1) {
+		for (let c = 0; c < cols; c += 1) {
+			if (grid[r][c].row == _r && grid[r][c].col == _c) {
+				return grid[r][c]
+			}
+		}
+	}
+	return undefined;
+}
+
+</script>
+
+
+<style>
+
+</style>
+
+</html>
