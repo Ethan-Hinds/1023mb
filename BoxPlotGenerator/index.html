@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script> 
+</head>
+
+<body>
+
+	<div id = "form">
+
+	 	<input type="radio" name = "separation" value = "line" checked = "checked"> Separate by new line <br>
+	  	<input type="radio" name = "separation" value = "comma"> Separate by comma <br>
+
+
+		<textarea id = "data" rows = "10" cols = "50"> Insert Data Here </textarea>
+		<button type = "button" id = "goButton" onclick = "separateData()"> Go! </button>
+	</div>
+
+	<canvas> </canvas>
+
+<script>
+
+var raw;
+var data = [];
+var median;
+var q1;
+var q3;
+var firstHalf = [];
+var secondHalf = [];
+var iqr;
+var lowerFence;
+var upperFence;
+var min;
+var max;
+var range;
+var c;
+var width;
+var height;
+var outliers = [];
+var numberOfDashes;
+var lowestValue;
+var highestValue;
+
+$(document).ready(function() {
+	numberOfDashes = 9;
+});
+
+function separateData() {
+
+	console.clear();
+
+	data = [];
+	firstHalf = [];
+	secondHalf = [];
+	outliers = [];
+
+	raw = $("#data").val();
+
+	var start = 0;
+
+	if ($('input[name = separation]:checked').val() == "comma") {
+
+		raw += ",";
+
+		for (i = 0; i < raw.length; i += 1) {
+			if (raw[i] == ",") {
+				data.push(parseFloat(raw.slice(start, i)));
+				start = i + 2;
+			}
+		}
+	} else {
+
+		if (raw[raw.length - 1] != "\n") {
+			raw += "\n";
+		}
+
+		for (i = 0; i < raw.length; i += 1) {
+			if (raw[i] == "\n") {
+				data.push(parseFloat(raw.slice(start, i)));
+				start = i + 1;
+			}
+		}
+	}
+	
+	data.sort(function(a, b) {
+  		return a - b;
+	});
+
+	median = getMedian(data);
+
+	firstHalf = data.slice(0, data.length / 2);
+	if (data.length % 2 == 0) {
+		secondHalf = data.slice(data.length / 2);
+	} else {
+		secondHalf = data.slice(data.length / 2 + 1);
+	}
+
+	q1 = getMedian(firstHalf);
+	q3 = getMedian(secondHalf);
+	iqr = q3 - q1;
+	lowerFence = q1 - 1.5 * iqr;
+	upperFence = q3 + 1.5 * iqr;
+	min = data[0];
+	max = data[data.length - 1];
+	range = max - min;
+
+	setUp();
+
+}
+
+
+function getMedian(numbers) {
+    // median of [3, 5, 4, 4, 1, 1, 2, 3] = 3
+    var median = 0;
+    var numsLen = numbers.length;
+ 
+    if (numsLen % 2 == 0) {
+        // average of two middle numbers
+        median = (numbers[numsLen / 2 - 1] + numbers[numsLen / 2]) / 2;
+    } else { // is odd
+        // middle number only
+        median = numbers[(numsLen - 1) / 2];
+    }
+ 
+    return median;
+}
+
+function setUp() {
+
+	$("#info").remove();
+	outliers = [];
+
+
+	canvas = document.querySelector("canvas");
+	canvas.width = window.innerWidth * 0.99;
+	canvas.height = window.innerHeight * 0.5;
+	width = canvas.width;
+	height = canvas.height;
+
+	c = canvas.getContext("2d");
+	c.clearRect(0, 0, width, height);
+
+	c.fillStyle = "black";
+
+	c.beginPath();
+	c.moveTo(width * 0.1, height * 0.6);
+	c.lineTo(width * 0.9, height * 0.6);
+	c.stroke();
+	c.closePath();
+
+	var interval = (max - min) / numberOfDashes;
+	var distanceBetweenDashes = width * 0.8 / numberOfDashes;
+
+	c.font = "16px Times New Roman";
+	c.textAlign = "center";
+
+	for (i = 0; i <= numberOfDashes; i += 1) {
+		c.fillText((min + interval * i).toFixed(2), width * 0.1 + i * distanceBetweenDashes, height * 0.65)
+	}
+	
+	// Draw outliers
+
+	for (i = 0; i < data.length; i += 1) {
+		if (data[i] < lowerFence || data[i] > upperFence) {
+			outliers.push(data[i]);
+			var percentage = (data[i] - min) / range;
+			var x = percentage * width * 0.8 + width * 0.1;
+			drawCircle(x);
+		}
+	}
+
+	// Draw lines at Q1, Q3, and median
+
+	var linePercentage;
+
+	linePercentage = (q1 - min) / range;
+	var q1X = linePercentage * width * 0.8 + width * 0.1;
+
+	linePercentage = (q3 - min) / range;
+	var q3X = linePercentage * width * 0.8 + width * 0.1;
+
+	c.beginPath();
+
+	c.moveTo(q1X, height * 0.55);
+	c.lineTo(q1X, height * 0.45);
+
+	c.lineTo(q3X, height * 0.45);
+	c.lineTo(q3X, height * 0.55);
+
+	c.lineTo(q1X, height * 0.55);
+	c.stroke();
+	c.fillStyle = "red";
+	c.fill();
+	c.closePath();
+
+	linePercentage = (median - min) / range;
+	var medianX = linePercentage * width * 0.8 + width * 0.1;
+
+	c.beginPath();
+	c.moveTo(medianX, height * 0.55);
+	c.lineTo(medianX, height * 0.45);
+	c.stroke();
+	c.closePath();
+
+	// Determine the values closest to the fences
+
+	// First, upper fence
+
+	for (i = 0; i < data.length; i += 1) {
+		if (data[i] < upperFence) {
+			highestValue = data[i];
+		}
+	}
+
+	// Next, the lower fence
+
+	for (i = data.length - 1; i >= 0; i -= 1) {
+		if (data[i] > lowerFence) {
+			lowestValue = data[i];
+		}
+	}
+
+	var dotPercentage;
+	var dotX;
+
+	if (lowestValue > min) {
+		dotPercentage = (lowestValue - min) / range;
+		dotX = dotPercentage * width * 0.8 + width * 0.1;
+	} else {
+		dotX = width * 0.1;
+	}
+
+	drawCircle(dotX);
+
+	c.beginPath();
+	c.moveTo(q1X, height * 0.5);
+	c.lineTo(dotX, height * 0.5);
+	c.stroke();
+	c.closePath();
+
+
+
+	if (highestValue < max) {
+		dotPercentage = (highestValue - min) / range;
+		dotX = dotPercentage * width * 0.8 + width * 0.1;
+	} else {
+		dotX = width * 0.9;
+	}
+
+	drawCircle(dotX);
+
+	c.beginPath();
+	c.moveTo(q3X, height * 0.5);
+	c.lineTo(dotX, height * 0.5);
+	c.stroke();
+	c.closePath();
+
+	showNumbers();
+
+
+
+}
+
+function drawCircle(x, y) {
+	c.beginPath();
+	c.arc(x, height * 0.5, 5, 0, 2 * Math.PI);
+	//c.fillStyle = "black";
+	c.fill();
+	c.closePath();
+}
+
+function showNumbers() {
+
+	$("body").append("<div id = 'info'> </div>");
+
+	$("#info").append("<label for = 'numberOfDashesTextBox'> Number of Dashes </label>")
+	$("#info").append("<input type = 'text' id = 'numberOfDashesTextBox' value = " + (numberOfDashes + 1) + ">");
+	//$("body").append('<input type = "range" min = "2" max = "25" value = "10" class = "slider" id = "numberOfDashesTextBox">');
+
+	$("#info").append("<p> Min: " + min + "</p>");
+	$("#info").append("<p> Max: " + max + "</p>");
+	$("#info").append("<p> Q1: " + q1 + "</p>");
+	$("#info").append("<p> Median: " + median + "</p>");
+	$("#info").append("<p> Q3: " + q3 + "</p>");
+	$("#info").append("<p> IQR: " + iqr + "</p>");
+	$("#info").append("<p> Lowest Value (Not an outlier): " + lowestValue + "</p>");
+	$("#info").append("<p> Highest Value (Not an outlier): " + highestValue + "</p>");
+
+	var outlierString = "";
+
+	for (i = 0; i < outliers.length; i += 1) {
+		outlierString += outliers[i] + " ";
+	}
+
+	if (outlierString.length == 0) {
+		outlierString = "None";
+	}
+
+	$("#info").append("<p> Outliers: " + outlierString + "</p>");
+
+}
+
+$(document).on("change", "#numberOfDashesTextBox", function() {
+    numberOfDashes = this.value - 1;
+    if (numberOfDashes >= 1) {
+    	setUp();
+    }
+});
+
+</script>
+
+<style>
+
+textarea {
+	margin-right: 5px;
+}
+
+#form {
+	display: inline-block;
+}
+
+canvas {
+	margin-top: 10px;
+}
+
+</style>
+
+</body>
+</html>
