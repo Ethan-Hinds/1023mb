@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Games</title>
+    <title>Home</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   </head>
   <body>
-    <h1> 1023mb Home Page </h1>
-    <a href="http://games.1023mb.net"> Games </a>
-    <br>
-    <a href="clock/"> Clock </a>
-    <br>
-    <a href = "RSSCalc/"> RSS Uncertainty Calculator </a>
-    
+    <a href="http://games.1023mb.net">
+      <div class="iconDiv">
+        <img class="iconImg" src="/Icons/Games_Icon.png" />
+        <p>Games</p>
+      </div>
+    </a>
   </body>
 </html>
 
 <style>
+  body {
+    background-color: #030327;
+  }
+  .iconImg {
+    width: 120px;
+    border-radius: 50%;
+  }
+  p {
+    color: #dddddd;
+  }
+  .iconDiv {
+    width: 150px;
+    height: 160px;
+    display: inline-block;
+    text-align: center;
+    padding-top: 5px;
+  }
+  .iconDiv:hover {
+    background-color: #052549;
+  }
+  .iconDiv:hover > p {
+    color: white;
+  }
+
+  a {
+    text-decoration: none;
+  }
 </style>
