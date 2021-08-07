@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+	<table border = 1>
+		<tr>
+			<td>
+				<p class = "title"> Substance: </p>
+				<select class = "withRightMargin" id = "substance">
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Heat of Fusion: </p>
+				<input type = "text" class = "textBox" id = "fusion">
+				<select id = "fusionUnit">
+					<option> J/kg </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Heat of Vaporization: </p>
+				<input type = "text" class = "textBox" id = "vaporization">
+				<select id = "vaporizationUnit">
+					<option> J/kg </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Freezing Temperature: </p>
+				<input type = "text" class = "textBox" id = "freezing">
+				<select id = "freezingUnit">
+					<option> C </option>
+					<option> K </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Boiling Temperature: </p>
+				<input type = "text" class = "textBox" id = "boiling">
+				<select id = "boilingUnit">
+					<option> C </option>
+					<option> K </option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p class = "title"> Mass of Solid: </p>
+				<input type = "text" class = "textBox" id = "solidMass">
+				<select id = "solidMassUnit">
+					<option> g </option>
+					<option> kg </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Mass of Liquid: </p>
+				<input type = "text" class = "textBox" id = "liquidMass">
+				<select id = "liquidMassUnit">
+					<option> g </option>
+					<option> kg </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Mass of Gas: </p>
+				<input type = "text" class = "textBox" id = "gasMass">
+				<select id = "gasMassUnit">
+					<option> g </option>
+					<option> kg </option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p class = "title"> Temperature of Solid: </p>
+				<input type = "text" class = "textBox" id = "solidTemp">
+				<select id = "solidTempUnit">
+					<option> C </option>
+					<option> K </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Temperature of Liquid: </p>
+				<input type = "text" class = "textBox" id = "liquidTemp">
+				<select id = "liquidTempUnit">
+					<option> C </option>
+					<option> K </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Temperature of Gas: </p>
+				<input type = "text" class = "textBox" id = "gasTemp">
+				<select id = "gasTempUnit">
+					<option> C </option>
+					<option> K </option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p class = "title"> Specific Heat Solid: </p>
+				<input type = "text" class = "textBox" id = "specificHeatSolid">
+				<select id = "specificHeatSolidUnit">
+					<option> J/g*K </option>
+					<option> J/kg*K </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Specific Heat Liquid: </p>
+				<input type = "text" class = "textBox" id = "specificHeatLiquid">
+				<select id = "specificHeatLiquidUnit">
+					<option> J/g*K </option>
+					<option> J/kg*K </option>
+				</select>
+			</td>
+			<td>
+				<p class = "title"> Specific Heat Gas: </p>
+				<input type = "text" class = "textBox" id = "specificHeatGas">
+				<select id = "specificHeatGasUnit">
+					<option> J/g*K </option>
+					<option> J/kg*K </option>
+				</select>
+			</td>
+		</tr>
+	</table>
+
+	<div id = "solveButton" style = "margin-left: 10px" onclick = "solve()"> <p style = "line-height: 0px; margin-left: 27px"> Solve! </p> </div>
+	<input type = "checkbox" id = "showWork"> Show Work
+	<br>
+
+	<div class = "title" id = "gasTitle"> </div>
+	<div class = "list" id = "gasEquations"> </div>
+	<div class = "title" id = "liquidTitle"> </div>
+	<div class = "list" id = "liquidEquations"> </div>
+	<div class = "title" id = "totalTitle"> </div>
+	<div class = "list" id = "totalEquations"> </div>
+
+<script>
+
+	var counter = 0;
+	var substances = ["Ammonia", "Benzene", "Copper", "Ethyl alcohol", "Gold", "Lead", "Mercury", "Nitrogen", "Oxygen", "Water"]; //Specific Heats in J/kg
+	var freezingTemps = [-77.8, 5.5, 1083, -114, 1063, 328, -39, -210, -219, 0] // Celcius
+	var boilingTemps = [-33.4, 80.1, 2566, 78, 2660, 1744, 357, -196, -183, 100]
+	var fusions = [332000, 126000, 207000, 100000, 64500, 25000, 12000, 26000, 14000, 335000] // Joules
+	var vaps = [1370000, 394000, 4730000, 850000, 1580000, 867000, 270000, 200000, 210000, 2260000]
+
+	var solidMass = 0;
+	var liquidMass = 0;
+	var gasMass = 0;
+
+	var soidTemp = 0;
+	var liquidTemp = 0;
+	var gasTemp = 0;
+
+	var cSolid = 0;
+	var cLiquid = 0;
+	var cGas = 0;
+
+	var meltingPoint = 0;
+	var boilingPoint = 0;
+
+	var fusion = 0;
+	var vaporization = 0;
+
+	var qGasList = [];
+	var qLiquidList = [];
+	var qTotalList = [];
+
+	var qGas = 0;
+	var qLiquid = 0;
+	var qTotal = 0;
+	var qTesting = 0;
+
+	var totalMass = 0;
+
+	var finalTemp = 0;
+	var massConverted = 0;
+	var massLeftOver = 0;
+
+	var showWork = 0;
+
+	$(document).ready(function() {
+		counter = 0;
+		while (counter < substances.length) {
+			$("#substance").append("<option>" + substances[counter] + "</option >");
+			counter ++;
+		}
+		$("#substance").append("<option> Other </option>")
+
+
+		$("#substance").val("Water");
+		$("#specificHeatSolid").val(2100);
+		$("#specificHeatLiquid").val(4186);
+		$("#specificHeatGas").val(2000);
+		setUnitsAndTemps(9);
+	})
+
+	$(".textBox").on("blur", function(){
+			if (isNaN($(this).val())) {
+				alert ("That is not a valid number!")
+			}
+		});
+
+	function setUnitsAndTemps(listIndex) {
+		$("#specificHeatSolidUnit").val("J/kg*K");
+		$("#specificHeatLiquidUnit").val("J/kg*K");
+		$("#specificHeatGasUnit").val("J/kg*K");
+		$("#freezingUnit").val("C");
+		$("#boilingUnit").val("C");
+		$("#fusionUnit").val("J/kg");
+		$("#vaporizationUnit").val("J/kg");
+
+		$("#solidMassUnit").val("kg");
+		$("#liquidMassUnit").val("kg");
+		$("#gasMassUnit").val("kg");
+
+		$("#solidTempUnit").val("C");
+		$("#liquidTempUnit").val("C");
+		$("#gasTempUnit").val("C");
+
+		$("#freezing").val(freezingTemps[listIndex]);
+		$("#boiling").val(boilingTemps[listIndex]);
+		$("#fusion").val(fusions[listIndex]);
+		$("#vaporization").val(vaps[listIndex]);
+	}
+
+	$("#substance").on("change", function() {
+		var e = document.getElementById("substance");
+		var value = e.options[e.selectedIndex].value;
+		var text = e.options[e.selectedIndex].text;
+		switch (text) {
+
+			case "Ammonia":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(0);
+				break;
+
+			case "Benzene":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val(1740);
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(1);
+				break;
+
+			case "Copper":
+				$("#specificHeatSolid").val(387);
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(2);
+				break;
+
+			case "Ethyl alcohol":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("2450");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(3);
+				break;
+
+			case "Gold":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(4);
+				break;
+
+			case "Lead":
+				$("#specificHeatSolid").val(128);
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(5);
+				break;
+
+			case "Mercury":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val(139);
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(6);
+				break;
+
+			case "Nitrogen":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(7);
+				break;
+
+			case "Oxygen":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+				setUnitsAndTemps(8);
+				break;
+
+			case "Water":
+				$("#specificHeatSolid").val(2100);
+				$("#specificHeatLiquid").val(4186);
+				$("#specificHeatGas").val(2000);
+				setUnitsAndTemps(9);
+				break;
+
+			case "Other":
+				$("#specificHeatSolid").val("");
+				$("#specificHeatLiquid").val("");
+				$("#specificHeatGas").val("");
+
+				$("#freezing").val("");
+				$("#boiling").val("");
+				$("#fusion").val("");
+				$("#vaporization").val("");
+				break;
+		}
+	})
+
+	function solve() {
+		// Set the values and the units to J, C, kg, J/kg
+		$(".title").children("h3").remove();
+		$(".list").children("div").remove();
+		$(".title").children("div").remove();
+		$(".list").children("h3").remove();
+
+		qGasList = [];
+		qLiquidList = [];
+		qTotalList = [];
+
+		if ($("#showWork").is(':checked')) {
+			showWork = 1;
+		} else {
+			showWork = 0;
+		}
+
+
+		fusion = parseInt($("#fusion").val());
+		vaporization = $("#vaporization").val();
+
+		meltingPoint = parseInt($("#freezing").val());
+		if  (($("#freezingUnit").val()) == "K") {
+			meltingPoint -= 273;
+		}
+		boilingPoint = parseInt($("#boiling").val());
+		if  (($("#boilingUnit").val()) == "K") {
+			boilingPoint -= 273;
+		}
+
+		gasMass = parseInt($("#gasMass").val());
+		if (($("#gasMassUnit").val()) == "g") {
+			gasMass = gasMass / 1000;
+		}
+		liquidMass = parseInt($("#liquidMass").val());
+		if (($("#liquidMassUnit").val()) == "g") {
+			liquidMass = liquidMass / 1000;
+		}
+		solidMass = parseInt($("#solidMass").val());
+		if (($("#solidMassUnit").val()) == "g") {
+			solidMass = solidMass / 1000;
+		}
+
+		if (gasMass > 0) {
+			gasTemp = parseInt($("#gasTemp").val());
+			if (($("#gasTempUnit").val()) == "K") {
+				gasTemp -= 273;
+			}
+		} else {
+			gasTemp = boilingPoint + 1;
+		}
+
+		if (liquidMass > 0) {
+			liquidTemp = parseInt($("#liquidTemp").val());
+			if (($("#liquidTempUnit").val()) == "K") {
+				liquidTemp -= 273;
+			}
+		} else {
+			liquidTemp = meltingPoint + 1;
+		}
+
+		if (solidMass > 0) {
+			solidTemp = parseInt($("#solidTemp").val());
+			if (($("#solidTempUnit").val()) == "K") {
+				solidTemp -= 273;
+			}
+		} else {
+			solidTemp = meltingPoint - 1;
+		}
+
+		cSolid = parseInt($("#specificHeatSolid").val());
+		if  (($("#specificHeatSolidUnit").val()) == "J/g*K") {
+			cSolid = cSolid * 1000;
+		}
+		cLiquid = parseInt($("#specificHeatLiquid").val());
+		if  (($("#specificHeatLiquidUnit").val()) == "J/g*K") {
+			cLiquid = cLiquid * 1000;
+		}
+		cGas = parseInt($("#specificHeatGas").val());
+		if  (($("#specificHeatGasUnit").val()) == "J/g*K") {
+			cGas = cGas * 1000;
+		}
+
+		if (meltingPoint < boilingPoint && gasTemp >= boilingPoint && (liquidTemp >= meltingPoint && liquidTemp <= boilingPoint) && solidTemp <= meltingPoint && gasMass >= 0 && liquidMass >= 0 && solidMass >= 0) {
+			if (showWork == 1) {
+				$("#gasTitle").append("<h3> Gas to Solid </h3>");
+				$("#gasEquations").append("<div> <p class = 'equation'>" + "Q = " + gasMass + " * " + cGas + " * (" + (gasTemp + " - " + boilingPoint) + ")" + "</p> </div>");
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong>" + "Q = " + gasMass * cGas * (gasTemp - boilingPoint) + " </strong> </p> </div>");
+				qGasList.push(gasMass * cGas * (gasTemp - boilingPoint));
+				$("#gasEquations").append("<div> <p class = 'equation'>" + "Q = " + gasMass + " * " + vaporization + "</p> </div>");
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + gasMass * vaporization + " </strong> </p> </div>");
+				qGasList.push(gasMass * vaporization);
+				$("#gasEquations").append("<div> <p class = 'equation'>" + "Q = " + gasMass + " * " + cLiquid + " * (" + (boilingPoint + " - " + meltingPoint) + ")" + "</p> </div>");
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + gasMass * cLiquid * (boilingPoint - meltingPoint) + " </strong> </p> </div>");
+				qGasList.push(gasMass * cLiquid * (boilingPoint - meltingPoint));
+				$("#gasEquations").append("<div> <p class = 'equation'>" + "Q = " + gasMass + " * " + fusion + "</p> </div>");
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + gasMass * fusion + " </strong> </p> </div>");
+				qGasList.push(gasMass * fusion);
+				$("#gasEquations").append("<div> <p class = 'equation'>" + "Q = " + gasMass + " * " + cSolid + " * (" + (meltingPoint + " - " + solidTemp) + ")" + "</p> </div>");
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + gasMass * cSolid * (meltingPoint- solidTemp) + " </strong> </p> </div>");
+				qGasList.push(gasMass * cSolid * (meltingPoint - solidTemp));
+				qGas = qGasList[0] + qGasList[1] + qGasList[2] + qGasList[3] + qGasList[4];
+				$("#gasEquations").append("<div> <p class = 'equation'> <strong> " + "Q for gas = " + qGas + " </strong> </p> </div>");
+
+
+
+				$("#liquidTitle").append("<h3> Liquid to Solid </h3>");
+				$("#liquidEquations").append("<div> <p class = 'equation'>" + "Q = " + liquidMass + " * " + cLiquid + " * (" + (liquidTemp + " - " + meltingPoint) + ")" + "</p> </div>");
+				$("#liquidEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + liquidMass * cLiquid * (liquidTemp - meltingPoint) + " </strong> </p> </div>");
+				qLiquidList.push(liquidMass * cLiquid * (liquidTemp - meltingPoint));
+				$("#liquidEquations").append("<div> <p class = 'equation'>" + "Q = " + liquidMass + " * " + fusion + "</p> </div>");
+				$("#liquidEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + liquidMass * fusion + " </strong> </p> </div>");
+				qLiquidList.push(liquidMass * fusion);
+				$("#liquidEquations").append("<div> <p class = 'equation'>" + "Q = " + liquidMass + " * " + cSolid + " * (" + (meltingPoint + " - " + solidTemp) + ")" + "</p> </div>");
+				$("#liquidEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + liquidMass * cSolid * (meltingPoint- solidTemp) + " </strong> </p> </div>");
+				qLiquidList.push(liquidMass * cSolid * (meltingPoint - solidTemp));
+				qLiquid = qLiquidList[0] + qLiquidList[1] + qLiquidList[2];
+				$("#liquidEquations").append("<div> <p class = 'equation'> <strong> " + "Q for Liquid = " + qLiquid + " </strong> </p> </div>");
+
+				qTotal = qGas + qLiquid;
+				qTesting = qTotal;
+				totalMass = solidMass + liquidMass + gasMass;
+
+				$("#totalTitle").append("<h3> Total Q = " + qTotal + "</h3>");
+				$("#totalEquations").append("<div> <p class = 'equation'>" + "Q = " + totalMass + " * " + cSolid + " * (" + (solidTemp + " - " + meltingPoint) + ")" + "</p> </div>");
+				$("#totalEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + totalMass * cSolid * (solidTemp - meltingPoint) + " </strong> </p> </div>");
+				qTesting += totalMass * cSolid * (solidTemp - meltingPoint)
+
+				if (qTesting <= 0) { // Not enough to get to melting point
+					$("#totalEquations").append("<div> <p class = 'equation'>" + qTotal + " = " + totalMass + " * " + cSolid + " (Temp - " + solidTemp + ")" + "</p> </div>");
+					finalTemp = qTotal / (totalMass * cSolid);
+					finalTemp += solidTemp;
+					finalTemp = finalTemp.toString();
+					$("#totalEquations").append("<div> <h3>" + totalMass + " kg of solid at " + finalTemp.slice(0,7) + " Celcius" + "</h3> </div>");
+				} else {
+					qTotal = qTesting;
+					$("#totalEquations").append("<div> <p class = 'equation'>" + "Q = " + totalMass + " * " + fusion + "</p> </div>");
+					$("#totalEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + totalMass * fusion + " </strong> </p> </div>");
+					qTesting -= totalMass * fusion;
+					if (qTesting <= 0) { // Not enough to melt it all
+						$("#totalEquations").append("<div> <p class = 'equation'>" + qTotal + " = " + "Mass converted" + " * " + fusion + "</p> </div>");
+						massConverted = qTotal / fusion;
+						massLeftOver = totalMass - massConverted;
+						massConverted = massConverted.toString();
+						massLeftOver =  massLeftOver.toString();
+						$("#totalEquations").append("<div> <h3>" + massLeftOver.slice(0, 7) + " kg of solid and " + massConverted.slice(0, 7) + " kg of liquid at " + meltingPoint + " Celcius" + "</h3> </div>");
+					} else {
+						qTotal = qTesting;
+						$("#totalEquations").append("<div> <p class = 'equation'>" + "Q = " + totalMass + " * " + cLiquid + " * (" + (meltingPoint + " - " + boilingPoint) + ")" + "</p> </div>");
+						$("#totalEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + totalMass * cLiquid * (meltingPoint - boilingPoint) + " </strong> </p> </div>");
+						qTesting += totalMass * cLiquid * (meltingPoint - boilingPoint);
+						if (qTesting <= 0) { // Not enough to get to boiling point
+							$("#totalEquations").append("<div> <p class = 'equation'>" + qTotal + " = " + totalMass + " * " + cLiquid + " (Temp - " + meltingPoint + ")" + "</p> </div>");
+							finalTemp = qTotal / (totalMass * cLiquid);
+							finalTemp += meltingPoint;
+							finalTemp = finalTemp.toString();
+							$("#totalEquations").append("<div> <h3>" + totalMass + " kg of liquid at " + finalTemp.slice(0,7) + " Celcius" + "</h3> </div>");
+						} else {
+							qTotal = qTesting;
+							$("#totalEquations").append("<div> <p class = 'equation'>" + "Q = " + totalMass + " * " + vaporization + "</p> </div>");
+							$("#totalEquations").append("<div> <p class = 'equation'> <strong> " + "Q = " + totalMass * vaporization + " </strong> </p> </div>");
+							qTesting -= totalMass * vaporization;
+							if (qTesting <= 0) { // Not enough to boil it all
+								$("#totalEquations").append("<div> <p class = 'equation'>" + qTotal + " = " + "Mass converted" + " * " + vaporization + "</p> </div>");
+								massConverted = qTotal / vaporization;
+								massLeftOver = totalMass - massConverted;
+								massConverted = massConverted.toString();
+								massLeftOver =  massLeftOver.toString();
+								$("#totalEquations").append("<div> <h3>" + massLeftOver.slice(0, 7) + " kg of liquid and " + massConverted.slice(0, 7) + " kg of gas at " + boilingPoint + " Celcius" + "</h3> </div>");
+							} else {
+								qTotal = qTesting;
+								$("#totalEquations").append("<div> <p class = 'equation'>" + qTotal + " = " + totalMass + " * " + cSolid + " (Temp - " + boilingPoint + ")" +  "</p> </div>");
+								finalTemp = qTotal / (totalMass * cGas);
+								finalTemp += boilingPoint;
+								finalTemp = finalTemp.toString();
+								$("#totalEquations").append("<div> <h3>" + totalMass + " kg of gas at " + finalTemp.slice(0, 7) + " Celcius " + "</h3> </div>");
+							}
+						}
+					}
+				}
+			} else {
+
+
+				qGasList.push(gasMass * cGas * (gasTemp - boilingPoint));
+				qGasList.push(gasMass * vaporization);
+				qGasList.push(gasMass * cLiquid * (boilingPoint - meltingPoint));
+				qGasList.push(gasMass * fusion);
+				qGasList.push(gasMass * cSolid * (meltingPoint - solidTemp));
+				qGas = qGasList[0] + qGasList[1] + qGasList[2] + qGasList[3] + qGasList[4];
+
+				qLiquidList.push(liquidMass * cLiquid * (liquidTemp - meltingPoint));
+				qLiquidList.push(liquidMass * fusion);
+				qLiquidList.push(liquidMass * cSolid * (meltingPoint - solidTemp));
+				qLiquid = qLiquidList[0] + qLiquidList[1] + qLiquidList[2];
+
+				qTotal = qGas + qLiquid;
+				qTesting = qTotal;
+				totalMass = solidMass + liquidMass + gasMass;
+
+				qTesting += totalMass * cSolid * (solidTemp - meltingPoint)
+
+				if (qTesting <= 0) { // Not enough to get to melting point
+					finalTemp = qTotal / (totalMass * cSolid);
+					finalTemp += solidTemp;
+					finalTemp = finalTemp.toString();
+					$("#totalEquations").append("<div> <h3>" + totalMass + " kg of solid at " + finalTemp.slice(0,7) + " Celcius" + "</h3> </div>");
+				} else {
+					qTotal = qTesting;
+					qTesting -= totalMass * fusion;
+					if (qTesting <= 0) { // Not enough to melt it all
+						massConverted = qTotal / fusion;
+						massLeftOver = totalMass - massConverted;
+						massConverted = massConverted.toString();
+						massLeftOver =  massLeftOver.toString();
+						$("#totalEquations").append("<div> <h3>" + massLeftOver.slice(0, 7) + " kg of solid and " + massConverted.slice(0, 7) + " kg of liquid at " + meltingPoint + " Celcius" + "</h3> </div>");
+					} else {
+						qTotal = qTesting;
+						qTesting += totalMass * cLiquid * (meltingPoint - boilingPoint);
+						if (qTesting <= 0) { // Not enough to get to boiling point
+							finalTemp = qTotal / (totalMass * cLiquid);
+							finalTemp += meltingPoint;
+							finalTemp = finalTemp.toString();
+							$("#totalEquations").append("<div> <h3>" + totalMass + " kg of liquid at " + finalTemp.slice(0,7) + " Celcius" + "</h3> </div>");
+						} else {
+							qTotal = qTesting;
+							qTesting -= totalMass * vaporization;
+							if (qTesting <= 0) { // Not enough to boil it all
+								massConverted = qTotal / vaporization;
+								massLeftOver = totalMass - massConverted;
+								massConverted = massConverted.toString();
+								massLeftOver =  massLeftOver.toString();
+								$("#totalEquations").append("<div> <h3>" + massLeftOver.slice(0, 7) + " kg of liquid and " + massConverted.slice(0, 7) + " kg of gas at " + boilingPoint + " Celcius" + "</h3> </div>");
+							} else {
+								qTotal = qTesting;
+								finalTemp = qTotal / (totalMass * cGas);
+								finalTemp += boilingPoint;
+								finalTemp = finalTemp.toString();
+								$("#totalEquations").append("<div> <h3>" + totalMass + " kg of gas at " + finalTemp.slice(0, 7) + " Celcius " + "</h3> </div>");
+							}
+						}
+					}
+				}
+			}
+		} else {
+			alert ("Values are off!");
+		}
+
+	}
+
+</script>
+
+<style>
+
+.title {
+	display: inline-block;
+}
+
+.withRightMargin {
+	margin-right: 50px;
+}
+
+.textBox {
+	width: 50px;
+}
+
+p {
+	margin-left: 5px;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+select {
+	margin-right: 5px;
+}
+
+#solveButton {
+	display: inline-block;
+	width: 100px;
+	height: 30px;
+	border-radius: 3px;
+	border: 2px solid black;
+	background-color: #00f0f0;
+	transform: translate(0px, 10px);
+
+}
+
+.equation {
+	font-size: 14px;
+	margin-left: 20px;
+}
+
+</style>
+
+
+</body>
+</html>
+
