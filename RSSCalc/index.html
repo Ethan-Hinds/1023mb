@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>RSS Calculator</title>
+  <script src="https://unpkg.com/mathjs@9.4.4/lib/browser/math.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <label> Expression </label>
+    <input type = "text" id = "equation"> </input>
+    <button onclick = "getVars()"> Ok </button>
+    <div id = "variables"></div>
+    <button id = "calculateButton" onclick = "calculate()" style = "visibility: hidden">Calculate!</button>
+    <div id = "results"></div>
+<script>
+    let variables = {};
+    function getVars() {
+        $("#results").empty();
+        $("#variables").empty();
+        $("#variables").append("<br>")
+        variables = {};
+        let equation = document.getElementById("equation").value;
+        for (let character of equation) {
+            if (isCharacterALetter(character)) {
+                if (!(character in variables)) {
+                    variables[character] = {};
+                    $("#variables").append(`<label> Value of ${character} </label> <input type = "text" id = "${character}Val">
+                    <label> Uncertainty in ${character} </label> <input type = "text" id = "${character}Unc"><br><br>`);
+                }
+            }
+        }
+        $("#calculateButton").css("visibility", "visible");
+    }
+    function calculate() {
+        $("#results").empty();
+        $("#results").append("<br>");
+        for (let key in variables) {
+            let val = document.getElementById(key + "Val").value;
+            let uncertainty = document.getElementById(key + "Unc").value;
+            variables[key].value = val;
+            variables[key].uncertainty = uncertainty;
+        }
+        let equation = document.getElementById("equation").value;
+        let equationPluggedIn = equation;
+        for (let key in variables) {
+            //equationPluggedIn = equationPluggedIn.replaceAll(key, variables[key].value);
+            for (let i = 0; i < equationPluggedIn.length; i += 1) {
+                if (equationPluggedIn[i] == key) {
+                    if (!((key == "E" || key == "e") && i > 0 && isCharacterADigit(equationPluggedIn[i-1]))) {
+                        equationPluggedIn = setCharAt(equationPluggedIn, i, variables[key].value);
+                    }
+                }
+            }
+            let partial = getVal(math.derivative(equation, key));
+            let partialPluggedIn = partial;
+            for (let key2 in variables) {
+                //partialPluggedIn = partialPluggedIn.replaceAll(key2, variables[key2].value);
+                for (let i = 0; i < partialPluggedIn.length; i += 1) {
+                    if (partialPluggedIn[i] == key2) {
+                        if (!((key2 == "E" || key2 == "e") && i > 0 && isCharacterADigit(partialPluggedIn[i-1]))) {
+                            partialPluggedIn = setCharAt(partialPluggedIn, i, variables[key2].value);
+                        }
+                    }
+                }
+            }
+            let partialEvaluated = math.evaluate(partialPluggedIn);
+            variables[key].partial = partial;
+            variables[key].partialPluggedIn = partialPluggedIn;
+            variables[key].partialEvaluated = partialEvaluated;
+            $("#results").append(`<p> Derivative wrt ${key}: ${partial}</p>`);
+            $("#results").append(`<ul> Evaluated as: ${partialEvaluated} </ul>`);
+        }
+
+        let equationResult = math.evaluate(equationPluggedIn);
+        let result = 0;
+        for (let key in variables) {
+            result += ((variables[key].partialEvaluated * variables[key].uncertainty)**2);
+        }
+        result = math.sqrt(result);
+        $("#results").append(`<br><p> Result: ${equationResult} ± ${result} </p>`);
+    }
+
+    function setCharAt(str,index,chr) {
+        if(index > str.length-1) return str;
+        return str.substring(0,index) + chr + str.substring(index+1);
+    }
+
+    function getVal(value) {
+        const precision = 14
+        return math.format(value, precision);
+    }
+    function isCharacterALetter(char) {
+        return (/[a-zA-Z]/).test(char)
+    }
+
+    function isCharacterADigit(char) {
+        return(/\d/).test(char);
+    }
+
+</script>
+</body>
+</html>
