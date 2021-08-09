@@ -18,6 +18,8 @@
 
 		let tolerance = 2;
 
+		let armStartAngle = 125;
+
 		var segments = [];
 		var minAngles = {};
 
@@ -72,6 +74,10 @@
 			let numSegmentsEl = document.querySelector("#numSegments");
 			numSegmentsEl.addEventListener("change", (event) => {
 				let n = parseFloat(numSegmentsEl.value);
+				if (n > 30) {
+					n = 30;
+					numSegmentsEl.value = 30;
+				}
 				let l = parseFloat(segmentLengthEl.value);
 				segments = [];
 				for (let i = 0; i < n; i += 1) {
@@ -116,13 +122,13 @@
 
 		function resetAllChildren(segment) {
 			if (segment.child) {
-				segment.child.setAngle(90);
+				segment.child.setAngle(armStartAngle);
 				resetAllChildren(segment.child);
 			}
 		}
 
 		function rotateAround(segment, minDistance) {
-			while (segment.angle >= 90 - 360) {
+			while (segment.angle >= armStartAngle - 360) {
 				segment.setAngle(segment.angle - 1);
 				if (dist(segment.endX, segment.endY, mouseX, mouseY) <= getChildrenLength(segment) + tolerance) {
 					let lastSegment = segments[segments.length - 1];
@@ -149,7 +155,7 @@
 			background(0);
 
 			for (let segment of segments) {
-				segment.setAngle(90);
+				segment.setAngle(armStartAngle);
 				segment.show();
 			}
 
