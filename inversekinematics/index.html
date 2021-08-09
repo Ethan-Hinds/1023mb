@@ -6,9 +6,11 @@
 
 	<body>
 		<label> Number of segments</label>
-		<input type = "text" id = "numSegments" value = "5">
+		<input type = "text" id = "numSegments" value = "5" />
 		<label> Segment Length </label>
-		<input type = "text" id = "segmentLength" value = "80">
+		<input type = "text" id = "segmentLength" value = "80" />
+		<input type = "checkbox" id = "allowCollisions" checked />
+		<label> Allow Collisions </label> 
 		<br>
 		<br>
 	</body>
@@ -16,12 +18,14 @@
 
 	<script>
 
-		let tolerance = 2;
+		var tolerance = 2;
 
-		let armStartAngle = 125;
+		var armStartAngle = 125;
 
 		var segments = [];
 		var minAngles = {};
+
+		var allowCollisions = true;
 
 		class Segment {	
 			constructor(x, y, length, parent, color) {
@@ -133,6 +137,32 @@
 				if (dist(segment.endX, segment.endY, mouseX, mouseY) <= getChildrenLength(segment) + tolerance) {
 					let lastSegment = segments[segments.length - 1];
 					let distance = dist(lastSegment.endX, lastSegment.endY, mouseX, mouseY);
+					let isIntersecting = false;
+					if (!allowCollisions) {
+						for (let i = 0; i < segments.length; i += 1) {
+							let index = segments.indexOf(segment);
+
+							if (abs(i-index) == 1) {
+								let a1 = segment.angle;
+								let a2 = segments[i].angle;
+								let da = abs(a2 - a1);
+								if (da > 160 && da < 200) {
+									isIntersecting = true;
+									break;
+								}
+							}
+
+							if (abs(i-index) >= 2) {
+								if (isIntersect(segments[i], segment)) {
+									isIntersecting = true;
+									break;
+								}
+							}
+						}
+					}
+					if (isIntersecting) {
+						continue;
+					}
 					if (distance < minDistance) {
 						minDistance = distance;
 						for (let seg of segments) {
@@ -151,7 +181,48 @@
 			return false;
 		}
 
+		function onLine(segment, x, y) {
+   			return (x <= max(segment.x, segment.endX) && x <= min(segment.x, segment.endX) && (segment.y <= max(segment.y, segment.endY) && y <= min(segment.y, segment.endY)));
+		}
+
+		function direction(ax, ay, bx, by, cx, cy) {
+   			let val = (by-ay)*(cx-bx)-(bx-ax)*(cy-by);
+   			if (val == 0) {
+      			return 0;
+			} else if(val < 0) {
+      			return 2;
+			}
+      		return 1;
+		}
+
+
+		function isIntersect(segment1, segment2) {
+
+			let dir1 = direction(segment1.x, segment1.y, segment1.endX, segment1.endY, segment2.x, segment2.y);
+			let dir2 = direction(segment1.x, segment1.y, segment1.endX, segment1.endY, segment2.endX, segment2.endY);
+			let dir3 = direction(segment2.x, segment2.y, segment2.endX, segment2.endY, segment1.x, segment1.y);
+			let dir4 = direction(segment2.x, segment2.y, segment2.endX, segment2.endY, segment1.endX, segment1.endY);
+   
+			if (dir1 != dir2 && dir3 != dir4) {
+				return true;
+			}
+			if (dir1==0 && onLine(segment1, segment2.x, segment2.y)) {
+				return true;
+			}
+			if (dir2==0 && onLine(segment1, segment2.endX, segment2.endY)) {
+				return true;
+			}
+			if (dir3==0 && onLine(segment2, segment1.x, segment1.y)) {
+				return true;
+			}
+			if (dir4==0 && onLine(segment2, segment1.endX, segment1.endY)) {
+				return true;
+			}
+   			return false;
+		}
+
 		function draw() {
+			allowCollisions = document.getElementById("allowCollisions").checked;
 			background(0);
 
 			for (let segment of segments) {
