@@ -40,6 +40,7 @@
             this.value = value;
             this.children = [];
             this.height = height;
+            this.hasNoChildren = false;
         }
 
         show() {
@@ -83,6 +84,9 @@
         calculateChildren() {
             let child1Val = this.value*2;
             let child2Val = (this.value-1)/3;
+            if (child2Val%1 == 0) {
+                child2Val = -1;
+            }
             for (let num of tree.nums) {
                 if (num.value == child1Val) {
                     child1Val = -1;
@@ -135,8 +139,7 @@
             while (!q.empty()) {
                 let node = q.front();
                 q.pop();
-                if (node.children.length == 0) {
-
+                if (node.children.length == 0 && !node.hasNoChildren) {
                     node.calculateChildren();
                     return;
                 }
