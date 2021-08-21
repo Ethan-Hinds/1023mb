@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script> <!--p5-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+<label> Equation </label> <input type = "text" id = "equation" value = "Math.sin(x)">
+<br>
+<label> Scale </label> <input type = "text" id = "scale" value = "60">
+<br>
+<label> Bounds </label> <input type = "text" id = "lowerBound" value = "0">
+<input type = "text" id = "upperBound" value = "2*Math.PI">
+<br>
+<button type = "submit" onclick = "start()"> Ok </button>
+
+<canvas> </canvas>
+
+</body>
+
+<script>
+
+var c;
+var width;
+var height;
+
+let scale = 60;
+let lowerBound = 0;
+let upperBound = 2*Math.PI;
+
+let equation = "";
+
+let points = [];
+
+function calculatePoint(equation, x) {
+	return eval(equation)
+}
+
+function setup() {
+
+	var canvas = document.querySelector("canvas");
+	c = canvas.getContext("2d");
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight - 10;
+	width = canvas.width;
+	height = canvas.height;
+}
+
+function start() {
+	equation = $("#equation").val();
+	scale = $("#scale").val();
+	points = [];
+	lowerBound = eval($("#lowerBound").val());
+	upperBound = eval($("#upperBound").val());
+
+	createPoints();
+}
+
+function drawCartesian() {
+
+	c.strokeStyle = "black";
+	c.beginPath();
+	c.moveTo(width / 2 - 200, height * 0.5);
+	c.lineTo(width / 2 + 200, height * 0.5);
+	c.stroke();
+	c.moveTo(width / 2, height / 2 - 200);
+	c.lineTo(width / 2, height / 2 + 200);
+	c.stroke();
+	c.closePath();
+
+}
+
+function draw() {
+
+	c.clearRect(0, 0, width, height);
+	drawCartesian();
+
+	for (let i = 0; i < points.length; i += 1) {
+		points[i].drawPoint();
+	}
+
+	c.font = "20px Georgia";
+	c.fillStyle = "black";
+	c.textAlign = "center";
+	c.fillText(equation, width / 2, height * 0.2);
+}
+
+
+function Point(xValue) {
+	this.xValue = xValue;
+	this.x = xValue + width / 2 + this.xValue * scale;
+
+	this.drawPoint = function() {
+		c.fillStyle = "red";
+		c.beginPath();
+		c.arc(this.x, this.y, 2, 0, 2*Math.PI);
+		c.closePath();
+		c.fill();
+	}
+
+	this.calculateCartesianPosition = function() {
+		this.yValue = calculatePoint(equation, this.xValue)
+		this.y = -this.yValue * scale + height / 2;
+	}
+
+	this.calculatePolarPosition = function() {
+
+		let r = this.yValue;
+		let angle = this.xValue;;
+
+		this.newXValue = r * Math.cos(angle);
+		this.newYValue = r * Math.sin(angle);
+
+		this.newX = this.newXValue * scale + width / 2;
+		this.newY = -this.newYValue * scale + height / 2;
+
+	}
+
+	this.calculateSlopeToMove = function() {
+		this.dx = this.newX - this.x;
+		this.dy = this.newY - this.y;
+	}
+
+	this.incrementPosition = function() {
+		this.x += this.dx * 0.05;
+		this.y += this.dy * 0.05;
+	}
+
+
+}
+
+function createPoints() {
+	for (let i = lowerBound; i < upperBound; i += 1 / scale) {
+
+		sleep(100 * i).then(() => {
+			points.push(new Point(i));
+			points[points.length - 1].calculateCartesianPosition();
+		 });
+	}
+
+	sleep(2000 + 100*(upperBound + lowerBound)).then(() => {
+		for (let i = 0; i < points.length; i += 1) {
+			points[i].calculatePolarPosition();
+			points[i].calculateSlopeToMove();
+			for (let j = 0; j < 20; j += 1) {
+				sleep(50 * j).then(() => {
+					points[i].incrementPosition();
+				});
+			}
+		}
+	});
+}
+
+
+
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+</script>
+
+
+<style>
+
+</style>
+
+</html>
