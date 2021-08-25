@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script>
+  <script language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/addons/p5.sound.min.js"></script>
 </head>
 
 <body>
@@ -11,6 +12,9 @@
     <label> Limit </label> 
     <input type = "text" id = "limit">
     <button onclick = "go()"> Go </button>
+    <button onclick = "stopTone()"> Stop Tone </button>
+    <label> Pitch </label>
+    <input type = "text" id = "multiplier" value = 60>
     <br>
     <textarea id = "result" style = "visibility: hidden;" readonly></textarea>
     <br>
@@ -18,7 +22,9 @@
 
 <script>
 
-    let nums = [];
+    let ones = [];
+    let o;
+    let multiplier = 60;
 
     function setup() {
         createCanvas(700, 700);
@@ -28,14 +34,26 @@
 
     function draw() {
         background(0);
-        for (let i = 0; i < nums.length-1; i += 1) {
-            let x = i;
-            let y = nums[i] == 0 ? height*0.9 : height*0.5;
-            ellipse(x, y, 1, 1);
-            if (nums[i] != nums[i+1]) {
-                line(x, height*0.9, x, height*0.5);
+        for (let i = 0; i < ones.length-1; i += 1) {
+            let multVal = parseFloat(document.getElementById("multiplier").value);
+            if (!isNaN(multVal)) {
+                multiplier = multVal;
             }
+            let freq = (ones[i+1] - ones[i]) * multiplier;
+            o.frequency.value = freq;
         }
+        // for (let i = 0; i < nums.length-1; i += 1) {
+        //     let x = i;
+        //     let y = nums[i] == 0 ? height*0.9 : height*0.5;
+        //     ellipse(x, y, 1, 1);
+        //     if (nums[i] != nums[i+1]) {
+        //         line(x, height*0.9, x, height*0.5);
+        //     }
+        // }
+    }
+
+    function stopTone() {
+        o.stop();
     }
 
     function go() {
@@ -43,18 +61,26 @@
         let increment = parseFloat(document.getElementById("increment").value);
         let limit = parseFloat(document.getElementById("limit").value);
         let status = 0;
-        nums = [status];
+        ones = [];
 
-        while (nums.length < 700) {
+        for (let i = 0; i < 700; i += 1) {
             n += increment;
             if (n > limit) {
-                status = status == 0 ? 1 : 0;
+                if (status == 0) {
+                    status = 1;
+                    ones.push(i);
+                } else {
+                    status = 0;
+                }
                 n -= limit;
             }
-            nums.push(status);
         }
-        document.getElementById("result").innerHTML = nums.join("");
-        document.getElementById("result").style.visibility = "";
+
+        var context = new AudioContext();
+        o = context.createOscillator();
+        o.connect(context.destination);
+        o.start();
+
     }
 
 </script>
