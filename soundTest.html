@@ -16,7 +16,6 @@
     <label> Pitch Multiplier </label>
     <input type = "text" id = "multiplier" value = 60>
     <br>
-    <textarea id = "result" style = "visibility: hidden;" readonly></textarea>
     <br>
 </body>
 
@@ -27,9 +26,7 @@
     let multiplier = 60;
 
     function setup() {
-        createCanvas(700, 700);
-        fill("red");
-        stroke("red");
+        noCanvas();
     }
 
     function draw() {
@@ -42,14 +39,6 @@
             let freq = (ones[i+1] - ones[i]) * multiplier;
             o.frequency.value = freq;
         }
-        // for (let i = 0; i < nums.length-1; i += 1) {
-        //     let x = i;
-        //     let y = nums[i] == 0 ? height*0.9 : height*0.5;
-        //     ellipse(x, y, 1, 1);
-        //     if (nums[i] != nums[i+1]) {
-        //         line(x, height*0.9, x, height*0.5);
-        //     }
-        // }
     }
 
     function stopTone() {
