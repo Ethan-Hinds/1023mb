@@ -14,9 +14,15 @@
     <button onclick = "go()"> Go </button>
     <button onclick = "stopTone()"> Stop Tone </button>
     <label> Pitch Multiplier </label>
+    <br>
     <input type = "text" id = "multiplier" value = 60>
-    <br>
-    <br>
+    <label> Wave Type (volume warning) </label>
+    <select id = "waveType">
+        <option> sine </option>
+        <option> square </option>
+        <option> triangle </option>
+        <option> sawtooth </option>
+    </select>
 </body>
 
 <script>
@@ -30,7 +36,10 @@
     }
 
     function draw() {
-        background(0);
+        if (o) {
+            let type = document.getElementById("waveType").value;
+            o.type = type;
+        }
         for (let i = 0; i < ones.length-1; i += 1) {
             let multVal = parseFloat(document.getElementById("multiplier").value);
             if (!isNaN(multVal)) {
