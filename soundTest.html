@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script>
+</head>
+
+<body>
+    <label> Increment </label>
+    <input type = "text" id = "increment">
+    <label> Limit </label> 
+    <input type = "text" id = "limit">
+    <button onclick = "go()"> Go </button>
+    <br>
+    <textarea id = "result" style = "visibility: hidden;" readonly></textarea>
+    <br>
+</body>
+
+<script>
+
+    let nums = [];
+
+    function setup() {
+        createCanvas(700, 700);
+        fill("red");
+        stroke("red");
+    }
+
+    function draw() {
+        background(0);
+        for (let i = 0; i < nums.length-1; i += 1) {
+            let x = i;
+            let y = nums[i] == 0 ? height*0.9 : height*0.5;
+            ellipse(x, y, 1, 1);
+            if (nums[i] != nums[i+1]) {
+                line(x, height*0.9, x, height*0.5);
+            }
+        }
+    }
+
+    function go() {
+        let n = 0;
+        let increment = parseFloat(document.getElementById("increment").value);
+        let limit = parseFloat(document.getElementById("limit").value);
+        let status = 0;
+        nums = [status];
+
+        while (nums.length < 700) {
+            n += increment;
+            if (n > limit) {
+                status = status == 0 ? 1 : 0;
+                n -= limit;
+            }
+            nums.push(status);
+        }
+        document.getElementById("result").innerHTML = nums.join("");
+        document.getElementById("result").style.visibility = "";
+    }
+
+</script>
+
+</html>
