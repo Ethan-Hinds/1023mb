@@ -11,6 +11,7 @@
     <button onclick = "stop()">Stop </button>
     <label> Horribleness</label> 
     <input type = "range" min = "0" max = "10", value = "0" id = "errorInput">
+    <input type = "checkbox" id = "restInput" checked> <label> Rest between notes</label>
 
     <script>
 
@@ -51,16 +52,23 @@
         }
 
         function playNote() {
+            let di = 0.5
+            if (!document.getElementById("restInput").checked) {
+                di = 1;
+                if (i%1 != 0) {
+                    i = Math.floor(i);
+                }
+            }
             if (i%1 != 0) {
                 g.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.04);
-                i += 0.5;
+                i += di;
                 return;
             }
             g.gain.exponentialRampToValueAtTime(1, context.currentTime + 0.04);
             let note = notes[i];
             if (note == " ") {
                 g.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.04);
-                i+= 0.5;
+                i+= di;
                 return;
             }
             let freq = freqs[note];
@@ -69,8 +77,8 @@
                 freq *= (Math.random() + 0.5);
             }
             o.frequency.value = freq;
-            i += 0.5;
-            if (i >= notes.length-1.5) {
+            i += di;
+            if (i >= notes.length-1) {
                 o.stop();
                 clearInterval(timer);
             }
