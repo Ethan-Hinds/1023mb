@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+    <button onclick = "play()"> Play </button>
+    <button onclick = "stop()">Stop </button>
+    <label> Horribleness</label> 
+    <input type = "range" min = "0" max = "4", value = "0" id = "errorInput">
+
+    <script>
+
+        let context;
+        let o;
+        let g;
+        let timer;
+        let i = 1;
+
+        let freqs = {
+            c: 261,
+            d: 294,
+            e: 329,
+            f: 349,
+            g: 392,
+            a: 440,
+            b: 493,
+        }
+
+        let notes = "ccggaag ffeeddc ggffeed ggffeed ccggaag ffeeddc ";
+        let tempo = 300;
+
+        function stop() {
+            o.stop();
+            clearInterval(timer);
+        }
+
+        function play() {
+            context = new AudioContext();
+            o = context.createOscillator();
+            g = context.createGain()
+            o.connect(g);
+            g.connect(context.destination);
+            o.start();
+
+            timer = setInterval(function(){ playNote(); }, tempo);
+        }
+
+        function playNote() {
+            g.gain.exponentialRampToValueAtTime(1, context.currentTime + 0.04);
+            let note = notes[i];
+            if (note == " ") {
+                g.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.04);
+                i+= 1;
+                return;
+            }
+            let freq = freqs[note];
+            let errorInput = parseInt(document.getElementById("errorInput").value);
+            if (Math.floor(Math.random()*6) < errorInput) {
+                freq *= (Math.random() + 0.5);
+            }
+            o.frequency.value = freq;
+            i += 1;
+            if (i >= notes.length-1) {
+                i = 0;
+            }
+        }
+
+    </script>
+    
+</body>
+</html> 
