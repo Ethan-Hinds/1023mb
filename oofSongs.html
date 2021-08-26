@@ -10,7 +10,7 @@
     <button onclick = "play()"> Play </button>
     <button onclick = "stop()">Stop </button>
     <label> Horribleness</label> 
-    <input type = "range" min = "0" max = "4", value = "0" id = "errorInput">
+    <input type = "range" min = "0" max = "10", value = "0" id = "errorInput">
 
     <script>
 
@@ -39,6 +39,7 @@
         }
 
         function play() {
+            i = 0;
             context = new AudioContext();
             o = context.createOscillator();
             g = context.createGain()
@@ -59,13 +60,14 @@
             }
             let freq = freqs[note];
             let errorInput = parseInt(document.getElementById("errorInput").value);
-            if (Math.floor(Math.random()*6) < errorInput) {
+            if (Math.floor(Math.random()*12) < errorInput) {
                 freq *= (Math.random() + 0.5);
             }
             o.frequency.value = freq;
             i += 1;
             if (i >= notes.length-1) {
-                i = 0;
+                o.stop();
+                clearInterval(timer);
             }
         }
 
