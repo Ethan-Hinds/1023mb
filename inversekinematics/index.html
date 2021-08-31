@@ -40,8 +40,8 @@
 
             let segmentLengthEl = document.querySelector("#segmentLength");
 			segmentLengthEl.addEventListener("change", (event) => {
-                if (isDanceMode) return;
 				let l = parseFloat(segmentLengthEl.value);
+                segmentLength = l;
                 for (let group of groups) {
                     for (let segment of group.segments) {
                         segment.length = l;
@@ -51,7 +51,6 @@
 
 			let numSegmentsEl = document.querySelector("#numSegments");
 			numSegmentsEl.addEventListener("change", (event) => {
-                if (isDanceMode) return;
 				let n = parseFloat(numSegmentsEl.value);
 				if (n > 100) {
 					n = 100;
@@ -68,7 +67,13 @@
 
         function initGroups(numSegments) {
             groups = [];
-            groups.push(new Group(createVector(width/2, height*0.9), numSegments));
+            if (!danceMode) {
+                groups.push(new Group(createVector(width/2, height*0.9), numSegments));
+            } else {
+                for (let x = width * 0.1; x < width; x += width * 0.2) {
+                    groups.push(new Group(createVector(x, height*0.9), numSegments));
+                }
+            }
         }
 
         function draw() {
@@ -90,7 +95,6 @@
                 isDanceMode = true;
                 groups = [];
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
-                    segmentLength = 80;
                     groups.push(new Group(createVector(x, height*0.9), numSegments));
                 }
                 song.play();
