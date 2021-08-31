@@ -26,6 +26,7 @@
 
         let isDanceMode = false;
         let song;
+        let frameOffset;
 
         function preload() {
             song = loadSound("September.m4a");
@@ -76,7 +77,7 @@
                 if (!isDanceMode) {
                     group.solve(mouseX, mouseY);
                 } else {
-                    let a = frameCount;
+                    let a = frameCount - frameOffset;
                     group.solve(group.anchor.x + 30*cos(10*a), height*0.3 + 30*sin(12*a));
                 }
                 group.show();
@@ -85,6 +86,8 @@
 
         function danceMode() {
             if (document.getElementById("danceMode").checked) {
+                frameOffset = frameCount - 43;
+                print (frameCount - frameOffset)
                 isDanceMode = true;
                 groups = [];
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
