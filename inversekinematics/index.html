@@ -89,7 +89,7 @@
                 groups = [];
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
                     //segmentLength = 40;
-                    groups.push(new Group(createVector(x, height*0.9), numSegments));
+                    groups.push(new Group(createVector(x, height*0.9), 10));
                 }
                 song.play();
             } else {
