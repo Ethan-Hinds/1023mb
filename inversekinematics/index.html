@@ -9,7 +9,7 @@
         <label> Number of segments</label>
 		<input type = "text" id = "numSegments" value = "5" />
 		<label> Segment Length </label>
-		<input type = "text" id = "segmentLength" value = "80" />
+		<input type = "text" id = "segmentLength" value = "40" />
         <input type = "checkbox" id = "lockInPlace" checked />
         <label> Lock in Place </label>
         <input type = "checkbox" id = "danceMode" onclick = "danceMode()"/>
@@ -88,7 +88,7 @@
                 isDanceMode = true;
                 groups = [];
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
-                    //segmentLength = 40;
+                    segmentLength = 80;
                     groups.push(new Group(createVector(x, height*0.9), numSegments));
                 }
                 song.play();
