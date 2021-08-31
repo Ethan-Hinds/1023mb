@@ -2,6 +2,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <script language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/addons/p5.sound.min.js"></script>
 	</head>
 
     <body>
@@ -9,17 +10,26 @@
 		<input type = "text" id = "numSegments" value = "5" />
 		<label> Segment Length </label>
 		<input type = "text" id = "segmentLength" value = "80" />
+        <input type = "checkbox" id = "lockInPlace" checked />
+        <label> Lock in Place </label>
+        <input type = "checkbox" id = "danceMode" onclick = "danceMode()"/>
+        <label> Dance Mode </label>
 		<br>
 		<br>
     </body>
 
 	<script>
 
-        let segments = [];
+        let groups = [];
         let segmentLength =  80;
         let numSegments = 5;
 
-        let tolerance = 2;
+        let isDanceMode = false;
+        let song;
+
+        function preload() {
+            song = loadSound("/September.m4a");
+        }
 
 		function setup() {
 			createCanvas(700, 700);
@@ -29,91 +39,129 @@
 
             let segmentLengthEl = document.querySelector("#segmentLength");
 			segmentLengthEl.addEventListener("change", (event) => {
+                if (isDanceMode) return;
 				let l = parseFloat(segmentLengthEl.value);
-				for (let segment of segments) {
-					segment.length = l;
-				}
+                for (let group of groups) {
+                    for (let segment of group.segments) {
+                        segment.length = l;
+                    }
+                }
 			});
 
 			let numSegmentsEl = document.querySelector("#numSegments");
 			numSegmentsEl.addEventListener("change", (event) => {
+                if (isDanceMode) return;
 				let n = parseFloat(numSegmentsEl.value);
 				if (n > 100) {
 					n = 100;
 					numSegmentsEl.value = 100;
 				}
                 numSegments = n;
-                initSegments();
+                initGroups(numSegments);
             });
 
 
-            initSegments();
+            initGroups(numSegments);
 
         }
 
-        function initSegments() {
-            segments = [];
-            segments.push(new Segment(undefined, color(random(50, 255), random(50, 255), random(50, 255))));
-            for (let i = 0; i < numSegments - 1; i += 1) {
-                let col = color(random(50, 255), random(50, 255), random(50, 255));
-                segments.push(new Segment(segments[segments.length-1], col));
-            }
-
-            for (let i = segments.length - 1; i >= 1; i -= 1) {
-                segments[i].child = segments[i-1];
-            }
+        function initGroups(numSegments) {
+            groups = [];
+            groups.push(new Group(createVector(width/2, height*0.9), numSegments));
         }
 
         function draw() {
             background(0);
-            solve();
-            for (let segment of segments) {
-                segment.show();
+            for (let group of groups) {
+                if (!isDanceMode) {
+                    group.solve(mouseX, mouseY);
+                } else {
+                    let a = frameCount;
+                    group.solve(group.anchor.x + 30*cos(10*a), height*0.3 + 30*sin(12*a));
+                }
+                group.show();
             }
         }
 
+        function danceMode() {
+            if (document.getElementById("danceMode").checked) {
+                isDanceMode = true;
+                groups = [];
+                for (let x = width * 0.1; x < width; x += width * 0.2) {
+                    //segmentLength = 40;
+                    groups.push(new Group(createVector(x, height*0.9), numSegments));
+                }
+                song.play();
+            } else {
+                isDanceMode = false;
+                groups = [];
+                segmentLength = parseFloat(document.getElementById("segmentLength").value);
+                song.stop();
+                initGroups(numSegments);
+            }
+        }
 
-        function solve() {
-            let maxIterations = 100;
+        class Group {
+            constructor(anchor, numSegments) {
+                this.segments = [];
+                this.anchor = anchor.copy();
+                this.segments.push(new Segment(this, undefined, color(random(50, 255), random(50, 255), random(50, 255))));
+                for (let i = 0; i < numSegments - 1; i += 1) {
+                    let col = color(random(50, 255), random(50, 255), random(50, 255));
+                    this.segments.push(new Segment(this, this.segments[this.segments.length-1], col));
+                }
+            }
 
-            for (let i = 0; i < maxIterations; i += 1) {
-                if (i%2 == 0) {
-                    let target = createVector(mouseX, mouseY);
-                    for (let i = segments.length - 1; i >= 0; i -= 1) {
-                        let segment = segments[i];
-                        segment.b = target;
-                        let dir = segment.a.sub(segment.b).normalize();
-                        segment.a = segment.b.copy().add(dir.mult(segment.length));
-                        target = segment.a.copy();
+            solve(targetX, targetY) {
+                let maxIterations = document.getElementById("lockInPlace").checked ? 2 : 1;
+
+                for (let i = 0; i < maxIterations; i += 1) {
+                    if (i%2 == 0) {
+                        let target = createVector(targetX, targetY);
+                        for (let i = this.segments.length - 1; i >= 0; i -= 1) {
+                            let segment = this.segments[i];
+                            segment.b = target;
+                            let dir = segment.a.sub(segment.b).normalize();
+                            segment.a = segment.b.copy().add(dir.mult(segment.length));
+                            target = segment.a.copy();
+                        }
+                    } else {
+                        let target = this.anchor.copy();
+                        for (let i = 0; i < this.segments.length; i += 1) {
+                            let segment = this.segments[i];
+                            segment.a = target;
+                            let dir = segment.b.sub(segment.a).normalize();
+                            segment.b = segment.a.copy().add(dir.mult(segment.length));
+                            target = segment.b.copy();
+                        }
                     }
-                } else {
-                    let target = createVector(width/2, height*0.9);
-                    for (let i = 0; i < segments.length; i += 1) {
-                        let segment = segments[i];
-                        segment.a = target;
-                        let dir = segment.b.sub(segment.a).normalize();
-                        segment.b = segment.a.copy().add(dir.mult(segment.length));
-                        target = segment.b.copy();
-                    }
+                }
+                if (maxIterations == 1) {
+                    this.anchor = this.segments[0].a.copy();
+                }
+            }
+
+            show() {
+                for (let segment of this.segments) {
+                    segment.show();
                 }
             }
         }
 
 
         class Segment {
-            constructor(parent, col) {
+            constructor(group, parent, col) {
                 if (parent) {
                     this.parent = parent;
                     this.a = parent.a.copy().sub(0, segmentLength);
                     this.b = parent.b.copy().sub(0, segmentLength);
                 } else {
                     this.parent = undefined;
-                    this.a = createVector(width/2, height*0.9);
-                    this.b = createVector(width/2, height*0.9-segmentLength);
+                    this.a = group.anchor.copy();
+                    this.b = group.anchor.sub(createVector(0, segmentLength)).copy();
                 }
                 this.col = col;
                 this.length = segmentLength;
-                this.child = undefined;
             }
 
             show() {
