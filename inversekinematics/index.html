@@ -21,8 +21,8 @@
 	<script>
 
         let groups = [];
-        let segmentLength =  80;
-        let numSegments = 5;
+        let segmentLength =  50;
+        let numSegments = 10;
 
         let isDanceMode = false;
         let song;
@@ -89,7 +89,7 @@
                 groups = [];
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
                     //segmentLength = 40;
-                    groups.push(new Group(createVector(x, height*0.9), 10));
+                    groups.push(new Group(createVector(x, height*0.9), numSegments));
                 }
                 song.play();
             } else {
