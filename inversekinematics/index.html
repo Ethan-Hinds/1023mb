@@ -67,7 +67,7 @@
 
         function initGroups(numSegments) {
             groups = [];
-            if (!danceMode) {
+            if (!isDanceMode) {
                 groups.push(new Group(createVector(width/2, height*0.9), numSegments));
             } else {
                 for (let x = width * 0.1; x < width; x += width * 0.2) {
@@ -120,6 +120,9 @@
 
             solve(targetX, targetY) {
                 let maxIterations = document.getElementById("lockInPlace").checked ? 2 : 1;
+                if (isDanceMode) {
+                    maxIterations = 2;
+                }
 
                 for (let i = 0; i < maxIterations; i += 1) {
                     if (i%2 == 0) {
