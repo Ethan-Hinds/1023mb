@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script>
+</head>
+
+<body>
+    <label> Speed </label>
+    <input type = "range" id = "speed" min = 1 max = 100>
+    <p id = "result"></p>
+</body>
+
+<script>
+
+    let inside = 0;
+    let outside = 0;
+
+    function setup() {
+        createCanvas(700, 700);
+        background(0);
+        stroke(255);
+        noFill();
+        ellipse(width/2, height/2, width, height);
+    }
+    
+    function draw() {
+        let speed = parseInt(document.getElementById("speed").value);
+        for (let i = 0; i < speed; i += 1) {
+            let x = random(width);
+            let y = random(height);
+            ellipse(x, y, 1, 1);
+            if (dist(width/2, height/2, x, y) < width/2) {
+                inside += 1;
+            } else {
+                outside += 1;
+            }
+            document.getElementById("result").innerHTML = `Pi: ${4*inside/(inside + outside)}`;
+        }
+    }
+
+</script>
+
+</html>
