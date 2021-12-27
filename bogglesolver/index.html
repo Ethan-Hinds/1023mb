@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.js"></script> -->
+    <script language="javascript" type="text/javascript" src="Block.js"></script>
+</head>
+
+<body>
+
+    <table id = "table">
+    </table>
+    <label id = "maxLengthLabel"> Maximum word length: 5 </label>
+    <input id = "maxLength" type = "range" min = "3" max = "5" value = "5"/>
+    <p id = "results"> </p>
+    <script>
+
+        let allWords = [];
+        let blocks = [];
+
+        $.ajax({
+            url: "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt",
+            success: function (result) {
+                let _allWords = result.split("\n");
+                for (let i = _allWords.length - 1; i >= 0; i--) {
+                    if (_allWords[i].length >= 3) {
+                        if (/^[a-z]+$/.test(_allWords[i])) {
+                            allWords.push(_allWords[i]);
+                        }
+                    }
+                }
+            }
+        });
+
+        $("#maxLength").change(function() {
+            console.log();
+            $("#maxLengthLabel").html(`Maximum word length: ${$("#maxLength").val()}`)
+        });
+
+        $('document').ready(function() {
+            let text = "";
+            for (let r = 0; r < 4; r += 1) {
+                text += "<tr>";
+                for (let c = 0; c < 4; c += 1) {
+                    text += `<td> <input type = "text" id = ${r}${c} style = "width: 20px; height: 20px />;"</td>`;
+                }
+                text += "</tr>";
+            }
+            $("#table").append(text);
+            $("body").append("<br> <button onclick = 'solve()'> Go </button>");
+        });
+
+        function solve() {
+            $("#results").empty();
+            let letters = [];
+            for (let r = 0; r < 4; r += 1) {
+                letters.push([]);
+                for (let c = 0; c < 4; c += 1) {
+                    letters[r].push($(`#${r}${c}`).val());
+                    if (letters[r][c] == "") {
+                        alert ("Every letter must be filled in!");
+                        return;
+                    }
+                }
+            }
+            initBlocks(letters);
+            let words = [];
+            let maxLength = parseInt($("#maxLength").val());
+            for (let i = 3; i <= maxLength; i += 1) {
+                words = words.concat(getWords(i));
+            }
+            $("#results").append(words.join("<br />"));
+        }
+
+        function getWords(wordLength) {
+            let orders = getOrders(wordLength-1);
+            let words = [];
+
+            for (let block of blocks) {
+                for (let order of orders) {
+                    let current = block;
+                    let word = [current];
+                    let isValidWord = true;
+                    current.visited = true;
+                    for (let dir of order) {
+                        let dirInt = parseInt(dir);
+                        if (current.neighbors[dirInt] && !current.neighbors[dirInt].visited) {
+                            current = current.neighbors[dirInt];
+                            current.visited = true;
+                            word.push(current);
+                        } else {
+                            isValidWord = false;
+                            break;
+                        }
+                    }
+                    for (let _block of word) {
+                        _block.visited = false;
+                    }
+                    if (isValidWord) {
+                        let str = "";
+                        for (let _block of word) {
+                            str += _block.value;
+                        }
+                        if (!words.includes(str) && allWords.includes(str)) {
+                            words.push(str);
+                        }
+                    }
+                }
+            }
+            return words;
+
+        }
+
+
+        function initBlocks(letters) {
+            blocks = [];
+            for (let r = 0; r < letters.length; r += 1) {
+                for (let c = 0; c < letters.length; c += 1) {
+                    blocks.push(new Block(letters[r][c], r, c));
+                }
+            }
+            for (let block of blocks) {
+                block.setNeighbors();
+            }
+        }
+
+        function getOrders(wordLength) {
+            let orders = new Array(parseInt("8".repeat(wordLength))+1);
+            for (let i = 0; i < orders.length; i++) {
+                orders[i] = i.toString();
+                orders[i] = "0".repeat(wordLength - orders[i].length) + i;
+            }
+            return orders;
+
+        }
+
+
+
+
+   
+   </script>
+
+</body>
+
+</html>
