@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <script src="https://unpkg.com/mathjs@9.4.4/lib/browser/math.js"></script>
+        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+    </head>
+    <body>
+        <label> y= </label> <input type="text" id="equation" />
+        <button onclick = "setVals()"> Go </button>
+        <button id="showDerivative" onclick = "showDerivative()" style="visibility: hidden;"> Animate Derivative </button>
+        <input type = "checkbox" id="dragDerivative" style="visibility: hidden;" /> <label id="dragDerivativeLabel" style="visibility: hidden;"> Drag Derivative </label>
+        <br />
+        <br />
+        <label> Domain </label> <input type="text" id="minX" value="-10" style="width: 50px;" /> <input type="text" id="maxX" value="10" style="width: 50px;" />
+        <label> Range </label> <input type="text" id="minY" value="-10" style="width: 50px;" /> <input type="text" id="maxY" value="10" style="width: 50px;" />
+        <br />
+        <br />
+    </body>
+</html>
