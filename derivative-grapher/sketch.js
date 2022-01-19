@@ -48,8 +48,7 @@ function draw() {
             push();
             translate(x, y);
             rotate(angle);
-           //image(goofy, -80*sin(angle), -80*cos(angle), 80, 80);
-           image(goofy, 0, -80*0.45, 80, 80);
+            image(goofy, 0, -80*0.45, 80, 80);
             pop();
         } else {
 
@@ -75,7 +74,10 @@ function draw() {
     }
 
     if (document.getElementById("dragDerivative").checked) {
-        let x = map(mouseX, 0, width, minX, maxX);
+
+        let _mouseX = constrain(mouseX, 0, width);
+
+        let x = map(_mouseX, 0, width, minX, maxX);
         let minDx = maxX;
         let closestVal;
         for (let val of vals) {
@@ -86,18 +88,32 @@ function draw() {
             }
         }
 
-        stroke("green");
-        let deriv = closestVal.derivative;
-        let x1 = map(deriv.x1, minX, maxX, 0, width);
-        let y1 = map(deriv.y1, minY, maxY, height, 0);
-        let x2 = map(deriv.x2, minX, maxX, 0, width);
-        let y2 = map(deriv.y2, minY, maxY, height, 0);
-        line(x1, y1, x2, y2);
+        if (document.getElementById("goofyCheckbox").checked) {
+            let _x = map(closestVal.x, minX, maxX, 0, width);
+            let y = map(closestVal.y, minY, maxY, height, 0);
+            let slope = closestVal.derivative.slope;
+            let angle = -atan(slope);
+            push();
+            translate(_x, y);
+            rotate(angle);
+            image(goofy, 0, -80*0.45, 80, 80);
+            pop();
 
-        fill("red");
-        let _x = map(closestVal.x, minX, maxX, 0, width);
-        let y = map(closestVal.y, minY, maxY, height, 0);
-        ellipse(_x, y, 5, 5);
+        } else {
+
+            stroke("green");
+            let deriv = closestVal.derivative;
+            let x1 = map(deriv.x1, minX, maxX, 0, width);
+            let y1 = map(deriv.y1, minY, maxY, height, 0);
+            let x2 = map(deriv.x2, minX, maxX, 0, width);
+            let y2 = map(deriv.y2, minY, maxY, height, 0);
+            line(x1, y1, x2, y2);
+
+            fill("red");
+            let _x = map(closestVal.x, minX, maxX, 0, width);
+            let y = map(closestVal.y, minY, maxY, height, 0);
+            ellipse(_x, y, 5, 5);
+        }
 
     }
 }
