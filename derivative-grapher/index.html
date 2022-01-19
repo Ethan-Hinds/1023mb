@@ -8,8 +8,11 @@
     <body>
         <label> y= </label> <input type="text" id="equation" value="sin(x)"/>
         <button onclick = "setVals()"> Graph </button>
-        <button id="showDerivative" onclick = "showDerivative()" style="visibility: hidden;"> Animate Tangent Line </button>
-        <input type = "checkbox" id="dragDerivative" style="visibility: hidden;" /> <label id="dragDerivativeLabel" style="visibility: hidden;"> Drag Tangent Line </label>
+        <div id = "hiddenTillEq">
+            <button id="showDerivative" onclick = "showDerivative()"> Animate Derivative </button>
+            <input type = "checkbox" id="dragDerivative" /> <label id="dragDerivativeLabel"> Drag Derivative </label>
+            <input type = "checkbox" id ="goofyCheckbox" /> <label id="goofyLabel"> Show Goofy </label>
+        </div>
         <br />
         <br />
         <label> Domain </label> <input type="text" id="minX" value="-10" style="width: 50px;" /> <input type="text" id="maxX" value="10" style="width: 50px;" />
@@ -17,4 +20,11 @@
         <br />
         <br />
     </body>
+
+    <style>
+        #hiddenTillEq {
+            display: inline-block;
+            visibility: hidden;
+        }
+    </style>
 </html>

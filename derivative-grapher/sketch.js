@@ -1,4 +1,3 @@
-
 let minX = -10;
 let maxX = 10;
 let minY = -10;
@@ -9,10 +8,16 @@ let vals = [];
 let derivIndex = undefined;
 let derivIndexStep = 3;
 
+let goofy;
+
+function preload() {
+    goofy = loadImage("goofy.gif")
+}
 
 function setup() {
     createCanvas(500, 500);
     strokeWeight(1);
+    imageMode(CENTER);
 }
 
 function draw() {
@@ -34,19 +39,34 @@ function draw() {
     }
 
     if (derivIndex != undefined) {
-        stroke("green");
-        let deriv = vals[derivIndex].derivative;
-        let x1 = map(deriv.x1, minX, maxX, 0, width);
-        let y1 = map(deriv.y1, minY, maxY, height, 0);
-        let x2 = map(deriv.x2, minX, maxX, 0, width);
-        let y2 = map(deriv.y2, minY, maxY, height, 0);
-        line(x1, y1, x2, y2);
 
-        fill("red");
-        let x = map(vals[derivIndex].x, minX, maxX, 0, width);
-        let y = map(vals[derivIndex].y, minY, maxY, height, 0);
-        ellipse(x, y, 5, 5);
-        
+        if (document.getElementById("goofyCheckbox").checked) {
+            let x = map(vals[derivIndex].x, minX, maxX, 0, width);
+            let y = map(vals[derivIndex].y, minY, maxY, height, 0);
+            let slope = vals[derivIndex].derivative.slope;
+            let angle = -atan(slope);
+            push();
+            translate(x, y);
+            rotate(angle);
+           //image(goofy, -80*sin(angle), -80*cos(angle), 80, 80);
+           image(goofy, 0, -80*0.45, 80, 80);
+            pop();
+        } else {
+
+            stroke("green");
+            let deriv = vals[derivIndex].derivative;
+            let x1 = map(deriv.x1, minX, maxX, 0, width);
+            let y1 = map(deriv.y1, minY, maxY, height, 0);
+            let x2 = map(deriv.x2, minX, maxX, 0, width);
+            let y2 = map(deriv.y2, minY, maxY, height, 0);
+            line(x1, y1, x2, y2);
+
+            fill("red");
+            let x = map(vals[derivIndex].x, minX, maxX, 0, width);
+            let y = map(vals[derivIndex].y, minY, maxY, height, 0);
+            ellipse(x, y, 5, 5);
+        }
+
         if (derivIndex < vals.length - derivIndexStep) {
             derivIndex += derivIndexStep;
         } else {
@@ -129,9 +149,7 @@ function setVals() {
 
     let derivative = math.format(math.derivative(eqInput, "x"));
 
-    document.getElementById("showDerivative").style.visibility = "visible";
-    document.getElementById("dragDerivative").style.visibility = "visible";
-    document.getElementById("dragDerivativeLabel").style.visibility = "visible";
+    document.getElementById("hiddenTillEq").style.visibility = "visible";
 
     vals = [];
     for (let x = minX; x < maxX; x += (maxX - minX)/1000) {
