@@ -14,7 +14,7 @@
     <script>
 
         let instructions = "x";
-        let n = 8;
+        let n = 2;
         let lineSize = 3;
 
 
@@ -28,16 +28,24 @@
         function restart(n) {
             instructions = "x";
             for (let i = 0; i < n; i++) {
-                instructions = instructions.split("");
-                for (let j = instructions.length-1; j >= 0; j -= 2) {
-                    if (instructions[j] == "x") {
-                        instructions[j] = "y+x+y";
-                    } else if (instructions[j] == "y") {
-                        instructions[j] = "x-y-x";
-                    }
+                for (let j = instructions.length-1; j >=0; j-=2) {
+                    let front = instructions.slice(0, j);
+                    let back = (instructions[j] == "x" ? "y+x+y" : "x-y-x") + instructions.slice(j+1);
+                    instructions = front + back;
                 }
-                instructions = instructions.join("");
             }
+
+            // for (let i = 0; i < n; i++) {
+            //     instructions = instructions.split("");
+            //     for (let j = instructions.length-1; j >= 0; j -= 2) {
+            //         if (instructions[j] == "x") {
+            //             instructions[j] = "y+x+y";
+            //         } else if (instructions[j] == "y") {
+            //             instructions[j] = "x-y-x";
+            //         }
+            //     }
+            //     instructions = instructions.join("");
+            // }
         }
 
         function draw() {
