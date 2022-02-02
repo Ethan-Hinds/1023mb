@@ -29,7 +29,7 @@
             instructions = "x";
             for (let i = 0; i < n; i++) {
                 instructions = instructions.split("");
-                for (let j = instructions.length-1; j >= 0; j--) {
+                for (let j = instructions.length-1; j >= 0; j -= 2) {
                     if (instructions[j] == "x") {
                         instructions[j] = "y+x+y";
                     } else if (instructions[j] == "y") {
