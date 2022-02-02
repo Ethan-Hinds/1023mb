@@ -35,6 +35,8 @@
                 }
             }
 
+            // This looks to be slower
+
             // for (let i = 0; i < n; i++) {
             //     instructions = instructions.split("");
             //     for (let j = instructions.length-1; j >= 0; j -= 2) {
@@ -50,18 +52,38 @@
 
         function draw() {
             background(0);
-            translate(width * 0.05, height * 0.95);
-
+            let x = width*0.05;
+            let y = height*0.95
+            let angle = 0;
             for (let i = 1; i < instructions.length; i += 2) {
-                line(0, 0, lineSize, 0);
-                translate(lineSize, 0);
+                let dx = lineSize*cos(angle);
+                let dy = lineSize*sin(angle);
+                line(x, y, x+dx, y+dy);
+                x += dx;
+                y += dy;
                 if (instructions[i] == "+") {
-                    rotate(60);
+                    angle += 60;
                 } else {
-                    rotate(-60);
+                    angle -= 60;
                 }
-
             }
+
+
+            // This looks to be slower
+
+            // background(0);
+            // translate(width * 0.05, height * 0.95);
+
+            // for (let i = 1; i < instructions.length; i += 2) {
+            //     line(0, 0, lineSize, 0);
+            //     translate(lineSize, 0);
+            //     if (instructions[i] == "+") {
+            //         rotate(60);
+            //     } else {
+            //         rotate(-60);
+            //     }
+
+            // }
         }
 
     </script>
