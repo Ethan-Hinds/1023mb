@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"> </script> -->
+        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+        <script language="javascript" type="text/javascript" src="Rocket.js"></script>
+        <script language="javascript" type="text/javascript" src="Population.js"></script>
+    </head>
+    <body>
+        <div id="chart">
+        </div>
+        <label> Speed </label>
+        <input type="range" id="speed" onchange="setSpeed()" min="1" max="20">
+        <br>
+    </body>
+
+    <script>
+
+
+var options = {
+    series: [{
+      name: "Average Fitness",
+      data: averageFitness
+  }],
+    chart: {
+    height: 350,
+    width: 700,
+    type: 'line',
+    zoom: {
+      enabled: false
+    }
+  },
+//   dataLabels: {
+//     enabled: false
+//   },
+  title: {
+    text: 'Average Fitness',
+    align: 'left'
+  },
+  "yaxis": [{
+        "labels": {
+            "formatter": function (val) {
+                return (val/1000).toFixed(0)
+            }
+        }
+    }]
+  };
+
+  var chart = new ApexCharts(document.querySelector("#chart"), options);
+  chart.render();
+    </script>
+</html>
