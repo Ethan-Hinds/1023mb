@@ -1,0 +1,241 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+    </head>
+    <body>
+        <div id="mapInfo">
+            <label> Width of map </label>
+            <input type="text" id="width" value="100">
+            <label> Height of map </label>
+            <input type="text" id="height" value="100">
+            <label> Start x </label>
+            <input type="text" id="startX" value="10">
+            <label> Start y </label>
+            <input type="text" id="startY" value="10">
+            <br>
+            <button onclick="start()"> Start </button>
+        </div>
+        <div id="data" style="visibility: hidden;">
+            <label> Segment Length </label>
+            <input type="text" id="length">
+            <p> Arrow keys to set next direction. Space to create new segment. </p>
+            <button id="newPath"> New Path </button>
+            <button id="done"> Done </button>
+        </div>
+        <div id="results">
+        </div>
+        <br>
+        <br>
+    </body>
+    <script>
+        
+        let hasStarted = false;
+
+        let xScale;
+        let yScale;
+
+        let startX;
+        let startY;
+
+        let paths = [];
+
+        let START_SPEED = 20 /10;
+        let CYCLE_SPEED = 30 /10;
+        let TURN_SPEED_FACTOR = 0.95;
+        let ACCEL = 5 / 1000;
+
+        let startTime = 0;
+
+        function start() {
+            hasStarted = true;
+            document.getElementById("mapInfo").style.visibility = "hidden";
+            document.getElementById("data").style.visibility = "visible";
+            let mapWidth = parseFloat(document.getElementById("width").value);
+            let mapHeight = parseFloat(document.getElementById("height").value);
+            startX = parseFloat(document.getElementById("startX").value);
+            startY = parseFloat(document.getElementById("startY").value);
+
+            xScale = width/mapWidth;
+            yScale = height/mapHeight;
+            paths.push(new Path(startX, startY));
+        }
+
+        function setup() {
+            createCanvas(600, 600);
+            fill(255);
+            stroke(255);
+        }
+
+        function keyPressed() {
+            let lastPath = paths[paths.length-1];
+            let lastSegment = lastPath.segments[lastPath.segments.length-1];
+            if (keyCode == LEFT_ARROW) {
+                lastSegment.direction = "left";
+                lastSegment.update(lastSegment.length);
+            } else if (keyCode == RIGHT_ARROW) {
+                lastSegment.direction = "right";
+                lastSegment.update(lastSegment.length);
+            } else if (keyCode == UP_ARROW) {
+                lastSegment.direction = "up";
+                lastSegment.update(lastSegment.length);
+            } else if (keyCode == DOWN_ARROW) {
+                lastSegment.direction = "down";
+                lastSegment.update(lastSegment.length);
+            } else if (keyCode == 32) { // Spacebar
+                lastPath.segments.push(new Segment(lastSegment.x2, lastSegment.y2));
+                document.getElementById("length").value = "";
+            }
+        }
+
+        function draw() {
+            if (hasStarted) {
+                background(0);
+            } else {
+                background(255);
+            }
+            for (let path of paths) {
+                if (path.isActive) {
+                    path.update();
+                }
+                path.show();
+            }
+        }
+
+        document.getElementById("length").addEventListener("change", (event) => {
+            lastPath = paths[paths.length-1];
+            lastPath.segments[lastPath.segments.length-1].update(parseFloat(event.target.value));
+        });
+
+        document.getElementById("newPath").addEventListener("click", () => {
+            paths.push(new Path(startX, startY));
+        });
+        
+        document.getElementById("done").addEventListener("click", () => {
+            startTime = frameCount;
+            document.getElementById("results").innerHTML = "";
+            for (let path of paths) {
+                path.isActive = true;
+                path.beginSimulation();
+            }
+        });
+
+        class Path {
+
+            constructor(startX, startY) {
+                this.segments = [new Segment(startX, startY)];
+                this.color = color(random(255), random(255), random(255));
+                this.isActive = false;
+                this.time = 0;
+            }
+
+            show() {
+                fill(this.color);
+                if (this.cycle) {
+                    ellipse(this.cycle.x*xScale, this.cycle.y*yScale, 20, 20);
+                }
+                stroke(this.color);
+                for (let segment of this.segments) {
+                    segment.show();
+                }
+            }
+
+            beginSimulation() {
+                this.cycle = {
+                    x: startX,
+                    y: startY,
+                    dx: 0,
+                    dy: 0
+                }
+                this.currentSegmentIndex = 0;
+                if (this.segments[0].direction == "right") {
+                    this.cycle.dx = START_SPEED;
+                } else if (this.segments[0].direction == "left") {
+                    this.cycle.dx = -START_SPEED;
+                } else if (this.segments[0].direction == "up") {
+                    this.cycle.dy = -START_SPEED;
+                } else if (this.segments[0].direction == "down") {
+                    this.cycle.dy = START_SPEED;
+                }
+            }
+
+            update() {
+                this.cycle.x += this.cycle.dx;
+                this.cycle.y += this.cycle.dy;
+
+                if (abs(this.cycle.dx) + abs(this.cycle.dy) < CYCLE_SPEED) {
+                    if (this.segments[this.currentSegmentIndex].direction == "right") {
+                        this.cycle.dx += ACCEL;
+                    } else if (this.segments[this.currentSegmentIndex].direction == "left") {
+                        this.cycle.dx -= ACCEL;
+                    } else if (this.segments[this.currentSegmentIndex].direction == "up") {
+                        this.cycle.dy -= ACCEL;
+                    } else if (this.segments[this.currentSegmentIndex].direction == "down") {
+                        this.cycle.dy += ACCEL;
+                    }
+                }
+
+                if (dist(this.cycle.x, this.cycle.y, this.segments[this.currentSegmentIndex].x2, this.segments[this.currentSegmentIndex].y2) <= abs(this.cycle.dx) + abs(this.cycle.dy)) {
+                    if (this.currentSegmentIndex < this.segments.length - 1) {
+                        this.cycle.x = this.segments[this.currentSegmentIndex].x2;
+                        this.cycle.y = this.segments[this.currentSegmentIndex].y2;
+                        this.currentSegmentIndex ++;
+                        if (this.segments[this.currentSegmentIndex].direction == "right") {
+                            this.cycle.dx = abs(this.cycle.dx + this.cycle.dy) * TURN_SPEED_FACTOR;
+                            this.cycle.dy = 0;
+                        } else if (this.segments[this.currentSegmentIndex].direction == "left") {
+                            this.cycle.dx = -abs(this.cycle.dx + this.cycle.dy) * TURN_SPEED_FACTOR;
+                            this.cycle.dy = 0;
+                        } else if (this.segments[this.currentSegmentIndex].direction == "up") {
+                            this.cycle.dy = -abs(this.cycle.dx + this.cycle.dy) * TURN_SPEED_FACTOR;
+                            this.cycle.dx = 0;
+                        } else if (this.segments[this.currentSegmentIndex].direction == "down") {
+                            this.cycle.dy = abs(this.cycle.dx + this.cycle.dy) * TURN_SPEED_FACTOR;
+                            this.cycle.dx = 0;
+                        }
+                    } else {
+                        this.isActive = false;
+                        this.time = frameCount - startTime;
+                        let p = document.createElement("p");
+                        p.innerHTML = this.time;
+                        p.style.color = this.color;
+                        document.getElementById("results").append(p);
+                    }
+                }
+            }
+        }
+
+        class Segment {
+            constructor(x1, y1) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x1;
+                this.y2 = y1;
+                this.length = 0;
+                this.direction = "right";
+            }
+
+            update(length) {
+                this.length = length;
+                if (this.direction == "left") {
+                    this.x2 = this.x1 - length;
+                    this.y2 = this.y1;
+                } else if (this.direction == "right") {
+                    this.x2 = this.x1 + length;
+                    this.y2 = this.y1;
+                } else if (this.direction == "up") {
+                    this.x2 = this.x1;
+                    this.y2 = this.y1 - length;
+                } else if (this.direction == "down") {
+                    this.x2 = this.x1;
+                    this.y2 = this.y1 + length;
+                }
+            }
+
+            show() {
+                line(this.x1*xScale, this.y1*yScale, this.x2*xScale, this.y2*xScale);
+            }
+        }
+
+    </script>
+</html>
