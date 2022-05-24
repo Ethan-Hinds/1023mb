@@ -17,8 +17,11 @@
             <button onclick="start()"> Start </button>
         </div>
         <div id="data" style="visibility: hidden;">
-            <label> Segment Length </label>
-            <input type="text" id="length">
+            <label> x </label>
+            <input type="text" id="endX">
+            <label> y </label>
+            <input type="text" id="endY">
+            <button id="submitSegment"> ok </button>
             <p> Arrow keys to set next direction. Space to create new segment. </p>
             <button id="newPath"> New Path </button>
             <button id="done"> Done </button>
@@ -59,33 +62,15 @@
             xScale = width/mapWidth;
             yScale = height/mapHeight;
             paths.push(new Path(startX, startY));
+
+            document.getElementById("endX").value = startX;
+            document.getElementById("endY").value = startY;
         }
 
         function setup() {
             createCanvas(600, 600);
             fill(255);
             stroke(255);
-        }
-
-        function keyPressed() {
-            let lastPath = paths[paths.length-1];
-            let lastSegment = lastPath.segments[lastPath.segments.length-1];
-            if (keyCode == LEFT_ARROW) {
-                lastSegment.direction = "left";
-                lastSegment.update(lastSegment.length);
-            } else if (keyCode == RIGHT_ARROW) {
-                lastSegment.direction = "right";
-                lastSegment.update(lastSegment.length);
-            } else if (keyCode == UP_ARROW) {
-                lastSegment.direction = "up";
-                lastSegment.update(lastSegment.length);
-            } else if (keyCode == DOWN_ARROW) {
-                lastSegment.direction = "down";
-                lastSegment.update(lastSegment.length);
-            } else if (keyCode == 32) { // Spacebar
-                lastPath.segments.push(new Segment(lastSegment.x2, lastSegment.y2));
-                document.getElementById("length").value = "";
-            }
         }
 
         function draw() {
@@ -102,13 +87,18 @@
             }
         }
 
-        document.getElementById("length").addEventListener("change", (event) => {
-            lastPath = paths[paths.length-1];
-            lastPath.segments[lastPath.segments.length-1].update(parseFloat(event.target.value));
+        document.getElementById("submitSegment").addEventListener("click", () => {
+            let x = parseFloat(document.getElementById("endX").value);
+            let y = parseFloat(document.getElementById("endY").value);
+            let lastPath = paths[paths.length-1];
+            lastPath.segments[lastPath.segments.length-1].update(x, y);
+            lastPath.segments.push(new Segment(x, y));
         });
 
         document.getElementById("newPath").addEventListener("click", () => {
             paths.push(new Path(startX, startY));
+            document.getElementById("endX").value = startX;
+            document.getElementById("endY").value = startY;
         });
         
         document.getElementById("done").addEventListener("click", () => {
@@ -215,20 +205,18 @@
                 this.direction = "right";
             }
 
-            update(length) {
-                this.length = length;
-                if (this.direction == "left") {
-                    this.x2 = this.x1 - length;
-                    this.y2 = this.y1;
-                } else if (this.direction == "right") {
-                    this.x2 = this.x1 + length;
-                    this.y2 = this.y1;
-                } else if (this.direction == "up") {
-                    this.x2 = this.x1;
-                    this.y2 = this.y1 - length;
-                } else if (this.direction == "down") {
-                    this.x2 = this.x1;
-                    this.y2 = this.y1 + length;
+            update(x, y) {
+                this.x2 = x;
+                this.y2 = y;
+
+                if (x > this.x1) {
+                    this.direction = "right";
+                } else if (x < this.x1) {
+                    this.direction = "left";
+                } else if (y < this.y1) {
+                    this.direction = "up";
+                } else if (y > this.y1) {
+                    this.direction = "down";
                 }
             }
 
