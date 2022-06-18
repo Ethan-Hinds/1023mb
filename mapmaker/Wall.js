@@ -4,12 +4,9 @@ class Wall {
         this.c1 = c1;
         this.r2 = r2;
         this.c2 = c2;
-
-        this.start = createVector(c1*squareSize, r1*squareSize);
-        this.end = createVector(c2*squareSize, r2*squareSize);
     }
 
     show() {
-        line(this.start.x, this.start.y, this.end.x, this.end.y)
+        line(this.c1*squareSize, this.r1*squareSize, this.c2*squareSize, this.r2*squareSize)
     }
 }
