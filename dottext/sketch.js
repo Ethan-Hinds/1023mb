@@ -1,7 +1,7 @@
 let font;
 
 let pts = [];
-let words = ["TRU", "SIMULATION", "AND", "TRAINING"];
+let words = ["SPACEBAR", "WOOHOO!", "FUN!"];
 
 let info = {
     animating: false,
