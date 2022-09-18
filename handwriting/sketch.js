@@ -29,7 +29,7 @@ function draw() {
             }
             x += letterWidth;
         }
-        if (x > width-letterWidth) {
+        if (x > width-2*letterWidth) {
             x = 0;
             y += letterHeight;
         }
