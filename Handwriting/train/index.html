@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"> </script> -->
+        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+    </head>
+    <body>
+        <h2> Generate your handwriting file. </h2>
+        <p> Draw the letter in the canavs.  Press next to move on to the next letter, or press clear to redraw the letter. </p>
+        <a href="../"> Back to handwriting site </a>
+        <p id="letter"> </p>
+        <button onclick="next()"> Next </button>
+        <button onclick="clear()"> Clear </button>
+        <button id="downloadButton" style="visibility: hidden;"> <a id="downloadLink"> Download Handwriting File </a> </button>
+        <br>
+        <br>
+    </body>
+</html>

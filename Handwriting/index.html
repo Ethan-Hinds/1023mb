@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"> </script> -->
+        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+    </head>
+    <body>
+        <h2> Handwriting Generator </h2>
+        <div id="prompt">
+            <p> Upload your handwriting file here </p>
+            <input type="file" accept=".json" id="fileUpload" onchange = "uploadFile()"/>
+            <p> Don't have a handwriting file? Generate one <a href="/train"> here! </a> </p>
+            <br>
+        </div>
+        <div id="type" style="display: none">
+            <textarea id="text" placeholder="Type here!"></textarea>
+            <label> Horizontal spacing </label>
+            <input type="number" id="letterWidth" style="width: 50px" value="50"/>
+            <br>
+        </div>
+    </body>
+</html>
