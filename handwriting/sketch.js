@@ -22,11 +22,12 @@ function draw() {
     let text = document.getElementById("text").value;
     for (let char of text) {
         if (char == " ") {
+            x += letterWidth;
         } else if (char in letters) {
             for (let coord of letters[char]) {
                 ellipse(coord[0]+x, coord[1]+y, 3, 3);
             }
-            x += letterWidth*0.5;
+            x += letterWidth;
         }
         if (x > width-letterWidth) {
             x = 0;
