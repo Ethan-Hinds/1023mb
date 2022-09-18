@@ -10,12 +10,14 @@
         <div id="prompt">
             <p> Upload your handwriting file here </p>
             <input type="file" accept=".json" id="fileUpload" onchange = "uploadFile()"/>
-            <p> Don't have a handwriting file? Generate one <a href="./train"> here! </a> </p>
+            <p> Don't have a handwriting file? Generate one <a href="/train"> here! </a> </p>
             <br>
         </div>
         <div id="type" style="display: none">
-            <textarea id="text"> </textarea>
-            <br>
+            <p> Note that you can only type lowercase letters </p>
+            <textarea id="text" placeholder="Type here!"></textarea>
+            <label> Horizontal spacing </label>
+            <input type="number" id="letterWidth" style="width: 50px" value="50"/>
             <br>
         </div>
     </body>

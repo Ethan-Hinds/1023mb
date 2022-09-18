@@ -1,6 +1,6 @@
 let letters;
 
-let letterWidth = 50;
+let letterWidth;
 let letterHeight = 50;
 
 async function setup() {
@@ -14,6 +14,10 @@ function draw() {
     if (!letters) { return };
     x = 0;
     y = 0;
+    let _letterWidth = parseInt(document.getElementById("letterWidth").value);
+    if (!isNaN(_letterWidth) && _letterWidth > 0) {
+        letterWidth = _letterWidth;
+    }
     background(0);
     let text = document.getElementById("text").value;
     for (let char of text) {
