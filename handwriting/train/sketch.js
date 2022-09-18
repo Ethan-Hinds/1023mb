@@ -16,7 +16,7 @@ function setLetter(letter) {
     pixels[letter] = [];
 }
 
-function clear() {
+function clearLetter() {
     background(0);
     pixels[alphabet[index]] = [];
 }
