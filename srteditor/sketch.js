@@ -53,7 +53,7 @@ function parseFile(text, open, close, filename) {
         if (lines[i].length == 0) { // Line is blank
             continue;
         }
-        if (!isNaN(lines[i])) {
+        if (i == 0 || (!isNaN(lines[i]) && lines[i-1].length==0) ){
             lines[i] = num;
             num++;
         }
