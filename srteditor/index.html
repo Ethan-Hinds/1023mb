@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <!-- <script src="https://cdn.jsdelivr.net/npm/p5@0.7.2/lib/p5.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"> </script> -->
+        <script language="javascript" type="text/javascript" src="sketch.js"></script>
+    </head>
+    <body>
+        <h2> CC Remover </h2>
+        <p> Upload a .srt to remove CC </p>
+        <input type="file" accept=".srt" id="fileUpload" multiple/>
+        <br>
+        <br>
+        <label> Opening indicator </label> <input type="text" id = "open" class="indicator" value="("/>
+        <label> Closing indicator </label> <input type="text" id = "close" class="indicator" value=")" />
+        <button onclick="fileUpload()"> Go! </button>
+    </body>
+
+    <style>
+        .indicator {
+            width: 30px;
+        }
+    </style>
+</html>
