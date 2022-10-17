@@ -60,7 +60,8 @@ function parseFile(text, open, close, filename) {
     }
 
     let newText = lines.join("\n");
-    download(filename.split(".srt")[0] + "_edit.srt", newText);
+    newText += "\n";
+    download(filename, newText);
 }
 
 function download(filename, text) {
