@@ -87,7 +87,7 @@ function Snake() {
 
   this.endGame = function() {
     let d = dist(this.x, this.y, food.x, food.y);
-    if (this.x < 0 || this.x > w - 1 || this.y < 0 || this.y > h - 1 || d < 1) {
+    if (this.x < 0 || this.x > w - 1 || this.y < 0 || this.y > h - 1 || d < 0) {
       return true;
     }
     return false;
