@@ -27,25 +27,25 @@ function draw() {
 
     if (x2 > 0) {
         let prevX = x1;
-        let prevY = y1 + math.evaluate(ropeEq.replace(/x/g, `(${0})`));
+        let prevY = y1;
         for (let x = 0; x < x2; x += 0.5) {
             let y = math.evaluate(ropeEq.replace(/x/g, `(${x})`));
-            // ellipse(x1+x, y1-y, 5, 5);
             line(prevX, prevY, x1+x, y1-y);
             prevX = x1+x;
             prevY = y1-y;
         }
+        line(prevX, prevY, x2+x1, y1-y2);
     } else {
         let prevX = x2+x1;
-        let prevY = y1-math.evaluate(ropeEq.replace(/x/g, `(${x2})`));
+        let prevY = y1-y2;
         for (let x = x2; x < 0; x += 0.5) {
             let y = math.evaluate(ropeEq.replace(/x/g, `(${x})`));
-            // ellipse(x1+x, y1-y, 5, 5);
             line(prevX, prevY, x1+x, y1-y);
             prevX = x1+x;
             prevY = y1-y;
-
         }
+        line(prevX, prevY, x1, y1);
+
     }
 
 
