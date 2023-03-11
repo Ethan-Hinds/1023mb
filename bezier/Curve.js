@@ -19,13 +19,15 @@ class Curve {
     }
 
     show() {
-        stroke(100);
-        for (let i = 0; i < this.points.length-1; i++) {
-            this.points[i].show();
-            line(this.points[i].x, this.points[i].y, this.points[i+1].x, this.points[i+1].y)
+        if (showConstruction) {
+            stroke(100);
+            for (let i = 0; i < this.points.length-1; i++) {
+                this.points[i].show();
+                line(this.points[i].x, this.points[i].y, this.points[i+1].x, this.points[i+1].y)
+            }
+            this.points[this.points.length-1].show();
         }
         
-        this.points[this.points.length-1].show();
 
         if (this.subCurve) {
             this.subCurve.show();

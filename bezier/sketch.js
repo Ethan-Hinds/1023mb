@@ -1,6 +1,6 @@
 let curve;
-
 let t;
+let showConstruction = false;
 
 function setup() {
     createCanvas(700, 700);
@@ -8,11 +8,12 @@ function setup() {
     fill(255);
     let points = [];
     curve = new Curve();
-    curve.points.push(new B_Point(200, 400));
-    curve.points.push(new B_Point(350, 250));
-    curve.points.push(new B_Point(500, 400));
-    // curve.points.push(new B_Point(650, 400));
+}
 
+function mousePressed() {
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+        curve.points.push(new B_Point(mouseX, mouseY));
+    }
 }
 
 function draw() {
@@ -20,7 +21,15 @@ function draw() {
     
     t = parseFloat(document.getElementById("t").value);
     
-    curve.show();
-    curve.drawCurve();
-    curve.interpolate(t);
+    if (curve.points.length > 0) {
+        curve.show();
+    }
+    if (curve.points.length > 1) {
+        curve.drawCurve();
+        curve.interpolate(t);
+    }
+}
+
+function updateShow() {
+    showConstruction = document.getElementById("show").checked;
 }
