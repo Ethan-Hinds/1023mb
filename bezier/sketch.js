@@ -8,6 +8,9 @@ function setup() {
     fill(255);
     let points = [];
     curve = new Curve();
+    curve.points.push(new B_Point(250, 400));
+    curve.points.push(new B_Point(400, 250));
+    curve.points.push(new B_Point(550, 400));
 }
 
 function mousePressed() {
