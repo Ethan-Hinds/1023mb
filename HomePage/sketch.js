@@ -89,6 +89,19 @@ function draw() {
     drawSoftBody(text);
 }
 
+function mousePressed() {
+    let maxForce = 200;
+    let forceY = -4;
+
+    for (let letter of letters.letters) {
+        for (let particle of letter.particles) {
+            let dx = maxForce / (particle.x - mouseX);
+            particle.force.x = dx;
+            particle.force.y = forceY;
+        }
+    }
+}
+
 function createNavbar() {
     let navbarDiv = createDiv();
     navbarDiv.id("navbar");
