@@ -43,6 +43,16 @@ const icons = [
         link: "/bezier",
         image: "HomePage/Assets/Icons/Bezier_Icon.png",
         name: "Bezier Curves"
+    },
+    {
+        link: "/mapmaker",
+        image: "HomePage/Assets/Icons/Mapmaker_Icon.png",
+        name: "Map Maker"
+    },
+    {
+        link: "/sierpinski",
+        image: "HomePage/Assets/Icons/Sierpinski_Icon.png",
+        name: "Sierpinski"
     }
 ];
 
